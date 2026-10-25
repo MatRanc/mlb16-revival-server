@@ -14,3 +14,7 @@ gamedata/
 *.pkg
 *.rdc
 *.rrc*
+app/.venv/
+app/build/
+app/dist/
+*.mlb16invite

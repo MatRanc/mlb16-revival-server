@@ -23,7 +23,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 PORTS = {443: True, 10051: True, 10050: False}   # port: use TLS
 FLS_HOST, FLS_PORT = 'production.mlb16.online.scea.com', 10070
 FLS_KEY = '00112233445566778899aabbccddeeff'   # any 32 ASCII chars; it is the AES-256 key
-os.chdir(os.path.dirname(os.path.abspath(__file__)))   # certs/, logs and player ids live next to this file
+# certs/, logs and player ids live next to this file, or in MLB16_DATA_DIR (set by the app)
+os.chdir(os.environ.get('MLB16_DATA_DIR') or os.path.dirname(os.path.abspath(__file__)))
 LOG = open('requests.jsonl', 'a', buffering=1)
 STATE = threading.RLock()
 

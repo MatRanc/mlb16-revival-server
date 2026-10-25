@@ -1,0 +1,12 @@
+Version: 1.2
+
+PPU-395faa2b9c12c400d03343cad62ce7aad8ec985b:
+  "Crowd fix (single-draw crowd batches)":
+    Games:
+      "MLB The Show 16":
+        BCUS01089: [ 01.10 ]
+    Author: "mister"
+    Notes: "Fixes missing crowd sections, fans on the pitcher's mound, stretched fans/black bars and fans in the sky. Draws every crowd batch as one forward DRAW_ARRAYS, which avoids two RPCS3 draw-clause bugs. See https://github.com/MatRanc/mlb-show-rpcs3-fixes"
+    Patch Version: 1.1
+    Patch:
+      - [ be32, 0x009bd544, 0x48000294 ] # beq cr6,0x9bd6f0 -> b 0x9bd7d8 (single forward DRAW_ARRAYS for every batch)
