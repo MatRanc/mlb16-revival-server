@@ -85,6 +85,10 @@ class App(tk.Tk):
         if sys.platform == 'win32':   # own taskbar entry and icon, instead of being grouped under python.exe
             import ctypes
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('MatRanc.MLB16Online')
+            try:   # draw at the screen's real resolution instead of being stretched (blurry) by display scaling
+                ctypes.windll.shcore.SetProcessDpiAwareness(1)
+            except (AttributeError, OSError):
+                pass
         super().__init__(className='mlb16-online')   # Tk turns this into the window class "Mlb16-online"
         if sys.platform.startswith('linux'):
             linux_launcher()
@@ -107,6 +111,7 @@ class App(tk.Tk):
         nb.pack(fill='both', expand=True, padx=12, pady=12)
         nb.add(self.setup_tab(nb), text='  Set up RPCS3  ')
         nb.add(self.host_tab(nb), text='  Host a game  ')
+        nb.bind('<<NotebookTabChanged>>', lambda e: self.show_addresses())   # picks up Tailscale started later
         self.protocol('WM_DELETE_WINDOW', self.quit_app)
         self.refresh()
         self.after(200, self.pump)
@@ -147,8 +152,8 @@ class App(tk.Tk):
 
         ttk.Button(f, text='Set up RPCS3', style='Accent.TButton', command=self.do_setup).grid(
             row=10, column=0, columnspan=3, sticky='ew', pady=(18, 4), ipady=4)
-        ttk.Label(f, text='Close RPCS3 first. Only MLB The Show 16 is affected; other games keep their settings.',
-                  foreground='gray').grid(row=11, column=0, columnspan=3, sticky='w')
+        ttk.Button(f, text='Launch RPCS3', command=self.launch_rpcs3).grid(
+            row=11, column=0, columnspan=3, sticky='ew', ipady=2)
 
         self.status = ttk.Label(f, justify='left')
         self.status.grid(row=12, column=0, columnspan=3, sticky='w', pady=(16, 0))
@@ -186,11 +191,32 @@ class App(tk.Tk):
             return None, 'Open the invite file your friend sent you first.'
         return self.cfg['invite_host'], self.cfg['invite_ca'].encode()
 
+    def launch_rpcs3(self):
+        r = s.Rpcs3(self.rpcs3_dir.get().strip())
+        cmd = s.rpcs3_command(r, self.cfg.get('rpcs3_exe'))
+        if not cmd:
+            exe = filedialog.askopenfilename(title='Where is RPCS3? (the RPCS3 program or AppImage)')
+            if not exe:
+                return
+            self.cfg['rpcs3_exe'] = exe
+            self.cfg.save()
+            cmd = [exe]
+        try:
+            subprocess.Popen(cmd, cwd=str(Path(cmd[0]).parent) if Path(cmd[0]).is_absolute() else None)
+        except OSError as e:
+            self.cfg.pop('rpcs3_exe', None)   # ask again next time
+            self.cfg.save()
+            messagebox.showerror('Launch RPCS3', f'Could not start RPCS3:\n{e}')
+
     def do_setup(self):
         r = s.Rpcs3(self.rpcs3_dir.get().strip())
         problem = r.problem()
         if problem:
             messagebox.showerror('RPCS3 folder', problem)
+            return
+        if s.rpcs3_running():
+            messagebox.showwarning('Close RPCS3', 'RPCS3 is open. Close it first, then click Set up RPCS3 again.\n\n'
+                                   'Only MLB The Show 16 is changed; your other games keep their settings.')
             return
         ip, ca = self.target()
         if ip is None:

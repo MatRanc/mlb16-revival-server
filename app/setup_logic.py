@@ -77,6 +77,38 @@ class Rpcs3:
         return None
 
 
+def _quiet():
+    return {'capture_output': True, 'text': True, 'timeout': 10,
+            'creationflags': getattr(subprocess, 'CREATE_NO_WINDOW', 0)}
+
+
+def rpcs3_running():
+    """True if an RPCS3 process is running (it would overwrite the files setup writes, or not reload them)."""
+    try:
+        if sys.platform == 'win32':
+            out = subprocess.run(['tasklist', '/FI', 'IMAGENAME eq rpcs3.exe', '/NH'], **_quiet()).stdout
+            return 'rpcs3.exe' in out.lower()
+        return subprocess.run(['pgrep', '-i', '-x', 'rpcs3'], **_quiet()).returncode == 0   # also the AppImage
+    except (OSError, subprocess.SubprocessError):
+        return False   # can't tell: don't block setup
+
+
+def rpcs3_command(r, saved=None):
+    """How to start RPCS3, or None if the user has to point at it (a Linux AppImage can be anywhere)."""
+    if saved and Path(saved).exists():
+        return [saved]
+    if sys.platform == 'win32':
+        exe = r.root / 'rpcs3.exe'
+        return [str(exe)] if exe.exists() else None
+    if sys.platform == 'darwin':
+        return ['open', '-a', 'RPCS3']
+    if shutil.which('rpcs3'):
+        return ['rpcs3']
+    if (Path.home() / '.var' / 'app' / 'net.rpcs3.RPCS3').is_dir() and shutil.which('flatpak'):
+        return ['flatpak', 'run', 'net.rpcs3.RPCS3']
+    return None
+
+
 # ---------------------------------------------------------------- YAML as RPCS3 writes it
 
 def load_yaml(path):

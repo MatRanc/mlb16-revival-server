@@ -8,7 +8,8 @@ game patches that bring back **Game Rooms**: join a room, see each other, chat, 
 ![The first online game in years: Mets at Tigers, pitching on a Linux PC and batting on an M1 MacBook Air, both on RPCS3](docs/images/first-1v1.jpg)
 
 > **Status: it works!** First online 1v1 game played on October 25, 2026 (Linux PC vs M1 Mac, same home network),
-> then Windows 11 vs M1 Mac the same day, through a full inning and a concede. Playing over the internet is next.
+> then Windows 11 vs M1 Mac the same day, through a full inning and a concede, and then over the internet (home
+> Wi-Fi vs a phone hotspot, through Tailscale), set up entirely with the app.
 > It's still early: expect rough edges, and please report what you find.
 
 | | |
@@ -17,10 +18,10 @@ game patches that bring back **Game Rooms**: join a room, see each other, chat, 
 | ✅ | Game Rooms: room list, player list, chat |
 | ✅ | Challenging a player, accepting, and the pre-game handshake |
 | ✅ | Peer-to-peer connection and **playing a 1v1 game** |
-| ❓ | Playing over the internet: the server through Tailscale, the match through RPCN's direct connection. Documented, not tested yet |
+| ✅ | Playing over the internet: the server through Tailscale, the match through RPCN's direct connection (home Wi-Fi vs a phone hotspot) |
 | ✅ | Windows: server and game on Windows 11, playing against a Mac |
 | ✅ | Conceding: the other player accepts, and both games go back to the room |
-| ✅ | **MLB16 Online app**: set up RPCS3 and host or join with an invite file, tested on Fedora and macOS |
+| ✅ | **MLB16 Online app**: set up RPCS3 and host or join with an invite file, tested on Fedora, Windows 11 and macOS |
 | ❓ | Reliability: one early attempt dropped before the game started, one got stuck on stadium select, and RPCS3 once crashed mid-game with a graphics error |
 | ❓ | Saving results after a game |
 | ❌ | Other online modes (Diamond Dynasty, Online Rated, Franchise…): out of scope for now |
@@ -66,13 +67,31 @@ On Linux, tkinter may be a separate package (`sudo dnf install python3-tkinter`)
 **The host:**
 1. **Set up RPCS3** tab → "Me, on this computer" → **Set up RPCS3** (with RPCS3 closed).
 2. **Host a game** tab → **Start server**. Allow network access if your firewall asks.
-3. **Save invite file…** and send it to your friend. Pick the Tailscale address if they're not on your home network
-   (see [Tailscale](docs/setup-host.md#over-the-internet-tailscale)).
+3. **Save invite file…** and send it to your friend (Discord, email, anything: it holds your address and your
+   public certificate, no secrets). Pick the Tailscale address if they're not on your home network (see below).
 
 **Your friend:** **Set up RPCS3** tab → "A friend, who sent me an invite file" → **Open invite…** → **Set up RPCS3**.
 
 **Then both of you:** boot the game → **Online → Game Rooms** → pick the room. Select your friend, choose
 **Challenge**, and they accept from the **Quick Menu** (SELECT).
+
+### Playing over the internet: Tailscale
+
+[Tailscale](https://tailscale.com) (free) connects the two computers so your friend can reach your server, with no
+port forwarding. Tested: host on home Wi-Fi, other player on a phone hotspot.
+
+1. **Both of you** install Tailscale ([tailscale.com/download](https://tailscale.com/download)) and sign in. Each of
+   you uses your own account. (Two computers of your own can just use the same account and skip step 2.)
+2. **The host shares their computer with the friend:** in the [admin console](https://login.tailscale.com/admin/machines),
+   click **⋯** next to your computer → **Share…**, and send the invite link to your friend. They open it and accept.
+   Your computer then shows up in their Tailscale. Sharing gives access to that one computer only, not your network,
+   and you can stop sharing from the same menu.
+3. **The host** opens the **Host a game** tab (Tailscale has to be running), picks the **Tailscale** address,
+   saves the invite file and sends it. Your friend opens it in the app and clicks **Set up RPCS3**.
+
+Only the game server goes through Tailscale. Everything else on both computers, like Discord, the browser and the
+match itself, uses the normal internet connection, so there's nothing to split or tune. The match connects directly
+between the two games (RPCN sets that up); turn on UPnP in your router if it won't connect.
 
 The manual steps, without the app, are in [docs/setup-host.md](docs/setup-host.md) and
 [docs/setup-player.md](docs/setup-player.md).
