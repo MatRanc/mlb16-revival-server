@@ -9,7 +9,7 @@ Status:
 - **seen**: the game called it during testing; it gets an empty success reply
 - blank: not seen yet, also gets an empty success reply
 
-347 services in 97 groups.
+347 services in 97 groups: 16 real, 15 seen.
 
 ## announcement
 
@@ -655,8 +655,8 @@ Status:
 | service | path | method | ssl | status |
 |---|---|---|---|---|
 | `mlb_game.create` | `mlb_games/create.xml` | POST | yes |  |
-| `mlb_game.start` | `mlb_games/start.xml` | POST | yes |  |
-| `mlb_game.view` | `mlb_games/view.xml` | GET |  |  |
+| `mlb_game.start` | `mlb_games/start.xml` | POST | yes | **real** |
+| `mlb_game.view` | `mlb_games/view.xml` | GET |  | seen |
 | `mlb_game.view_details` | `mlb_games/view_details.xml` | GET |  |  |
 
 ## mlb_players
@@ -692,13 +692,13 @@ Status:
 
 | service | path | method | ssl | status |
 |---|---|---|---|---|
-| `player.batch_lookup` | `players/batch_lookup.xml` | POST |  |  |
-| `player.batch_lookup_for_challenge` | `players/batch_lookup.xml` | POST |  |  |
+| `player.batch_lookup` | `players/batch_lookup.xml` | POST |  | **real** |
+| `player.batch_lookup_for_challenge` | `players/batch_lookup.xml` | POST |  | **real** |
 | `player.deserter` | `players/deserter.xml` | POST |  |  |
 | `player.deserter_check` | `players/deserter_check.xml` | GET |  |  |
-| `player.hotbar_lookup_for_challenge` | `players/batch_lookup.xml` | POST |  |  |
-| `player.info` | `players/info2.xml` | GET |  |  |
-| `player.info_for_challenge` | `players/info2.xml` | GET |  |  |
+| `player.hotbar_lookup_for_challenge` | `players/batch_lookup.xml` | POST |  | **real** |
+| `player.info` | `players/info2.xml` | GET |  | **real** |
+| `player.info_for_challenge` | `players/info2.xml` | GET |  | **real** |
 | `player.vote` | `players/vote.xml` | POST |  |  |
 
 ## player_complaint
@@ -841,4 +841,4 @@ Status:
 |---|---|---|---|---|
 | `universal_profile.update` | `universal_profiles/update.xml` | POST | yes | **real** |
 | `universal_profile.update_lite` | `universal_profiles/update_lite.xml` | POST | yes |  |
-| `universal_profile.view` | `universal_profiles/view.xml` | GET |  |  |
+| `universal_profile.view` | `universal_profiles/view.xml` | GET |  | seen |

@@ -1,7 +1,7 @@
 # MLB The Show 16 revival server (PS3 / RPCS3)
 
 Sony shut down *MLB The Show 16*'s online service on July 28, 2020, with update 1.10. This is a small private server,
-plus two RPCS3 game patches, that brings back **Game Rooms** so you can play 1v1 against a friend, both on RPCS3.
+plus three RPCS3 game patches, that brings back **Game Rooms** so you can play 1v1 against a friend, both on RPCS3.
 
 **Status: work in progress.** What works so far:
 
@@ -10,8 +10,9 @@ plus two RPCS3 game patches, that brings back **Game Rooms** so you can play 1v1
 | ✅ | Online menus unlocked (patch) |
 | ✅ | PSN sign-in through RPCN, login to the game server |
 | ✅ | FLS session server (encrypted, now understood) |
-| ✅ | Game Rooms: room list, joining, the player list, chat |
-| 🚧 | Challenging a player and starting the game |
+| ✅ | Game Rooms: room list, joining, the player list, chat between players |
+| ✅ | Challenging a player and accepting it (Quick Menu) |
+| 🚧 | Starting the match after the accept: `mlb_games/start` and `players/info2` replies added, untested |
 | ❓ | The peer-to-peer match itself (NP Signaling through RPCN) |
 
 Other modes (Diamond Dynasty, Online Rated, Franchise…) reach the server but need many more endpoints. They're out of
@@ -19,7 +20,8 @@ scope for now.
 
 ## How it works, in short
 - The game still has all its online code. Update 1.10 only swapped the menu's "go online" check for an "ONLINE DISABLED"
-  popup, and the first patch undoes that.
+  popup, and the first patch undoes that. The other two skip Sony's (deleted) live roster download and enable game
+  room challenges, which normally switch on after a step tied to Sony's servers.
 - RPCS3's **RPCN** stands in for PSN: sign-in tickets, friends, and the peer-to-peer connection.
 - RPCS3's **IP/Hosts switch** points the game's dead hostnames at this server. Replacing the PS3 firmware's root
   certificates with your own makes the game trust it.
@@ -34,11 +36,15 @@ The full write-up of the protocol is in [docs/protocol.md](docs/protocol.md).
 2. **One person hosts:** [docs/setup-host.md](docs/setup-host.md) covers running the server, your certificate, and same-network or Tailscale access.
 3. **Each player:** [docs/setup-player.md](docs/setup-player.md) covers RPCN, network settings, the patches and the certificate.
 
+## Known limits
+- Player lists refresh every 30 s (a client timer), so a newly joined player takes up to 30 s to appear.
+- Player-list column names are guesses (the UI script is compiled), so some fields may show blank or zero.
+
 ## Repo
 | | |
 |---|---|
 | `server/` | `server.py` (the server), `make_certs.sh` (your CA), `certswap.sh` (install a CA into RPCS3) |
-| `patches/MLB16_online.yml` | the two RPCS3 patches |
+| `patches/MLB16_online.yml` | the three RPCS3 patches: re-enable online menus, skip live roster, allow challenges |
 | `docs/protocol.md` | hosts, TLS, the XML API, login and room flows, the FLS protocol |
 | `docs/endpoints.md` | all 347 game API services the client knows, and which ones the server implements |
 | `docs/code-map.md` | where things are in the game's code (addresses and our names) |
