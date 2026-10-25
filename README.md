@@ -114,8 +114,8 @@ something like it is in an official build, keep the patch on.
 ```
 
 - **The game's online code is all still there.** Update 1.10 only blocked the way in, and the patches undo that.
-- **RPCS3's IP/Hosts switch** sends the game's dead Sony hostnames to this server. Putting your own certificate in
-  place of the PS3 firmware's root certificates makes the game trust it.
+- **RPCS3's IP/Hosts switch** sends the game's dead Sony hostnames to this server. Adding your own certificate to
+  the PS3 firmware's root certificates makes the game trust it.
 - **The server** answers the game's XML web API and runs **FLS**, its live session server (AES-encrypted XML over TCP),
   which relays room chat and challenges between players.
 - **RPCN** handles sign-in and NP Signaling, which connects the two games directly for the match.
@@ -134,7 +134,7 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
 |---|---|
 | `server/server.py` | the server: game API, FLS, logging |
 | `server/make_certs.sh` | makes your own root CA and server certificate |
-| `server/certswap.sh`, `certswap.ps1` | installs a CA into RPCS3 (Linux/macOS, Windows) and restores the originals |
+| `server/certswap.sh`, `certswap.ps1` | adds the host's CA to RPCS3's certificates, keeping the originals (Linux/macOS, Windows) |
 | `patches/MLB16_online.yml` | the five RPCS3 patches |
 | `docs/setup-host.md`, `setup-player.md` | setup guides |
 | `docs/protocol.md` | hosts, TLS, the XML API, login, rooms, FLS, challenges, the pre-game handshake |

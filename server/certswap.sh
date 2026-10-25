@@ -1,8 +1,8 @@
 #!/bin/sh
-# Put a root CA in place of every root CA in RPCS3's PS3 firmware, or put the originals back.
+# Add a root CA to every root CA file in RPCS3's PS3 firmware (original + ours), or put the originals back.
 #   ./certswap.sh install [ca-file]    (default: certs/ca.pem next to this script; players use the host's ca.pem)
 #   ./certswap.sh restore
-# While installed, other games' HTTPS to real servers will fail, so restore when you're done.
+# The originals stay in each file, so other games keep working and there's nothing to undo.
 # RPCS3 folder: $RPCS3_DIR, else ~/.config/rpcs3 (Linux) or ~/Library/Application Support/rpcs3 (macOS).
 set -e
 if [ -z "$RPCS3_DIR" ]; then
@@ -17,8 +17,9 @@ case "$1" in
   install)
     [ -f "$CA" ] || { echo "no CA file at $CA"; exit 1; }
     [ -d "$BACKUP" ] || cp -a "$CERT" "$BACKUP"
-    for f in "$BACKUP"/*.cer; do cp "$CA" "$CERT/$(basename "$f")"; done
-    echo "installed $CA over $(ls "$BACKUP" | wc -l) cert files (originals in $BACKUP)";;
+    # built from the backup each time, so re-running with another host's CA replaces the old one
+    for f in "$BACKUP"/*.cer; do cat "$f" "$CA" > "$CERT/$(basename "$f")"; done
+    echo "added $CA to $(ls "$BACKUP" | wc -l) cert files (untouched originals in $BACKUP)";;
   restore)
     [ -d "$BACKUP" ] && cp -a "$BACKUP"/. "$CERT"/ && echo "restored original certs";;
   *) echo "usage: $0 install [ca-file] | restore"; exit 1;;

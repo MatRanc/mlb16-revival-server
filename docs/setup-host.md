@@ -105,4 +105,4 @@ Strict NAT (some mobile hotspots and ISPs that share one public IP between custo
 - Keep `server.py` running while people play.
 - If your LAN IP changes (DHCP), players on your network need the new IP. A DHCP reservation in your router avoids this.
   Tailscale IPs don't change.
-- When you're done, `./certswap.sh restore` puts RPCS3's original certificates back. Other games' online features need them.
+- Nothing to undo after playing: the certificate install keeps RPCS3's original certificates, so other games still work.

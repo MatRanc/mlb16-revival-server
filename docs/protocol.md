@@ -14,7 +14,9 @@ Both hostnames still belong to Sony, but the servers are gone. RPCS3's **IP/Host
 
 ## TLS
 
-- The game uses the PS3 firmware's own SSL library and verifies certificates against the firmware's root CAs in `dev_flash/data/cert`. Replacing those files with your own CA (`server/certswap.sh`) makes the game trust your server. No game patch is needed.
+- The game uses the PS3 firmware's own SSL library and verifies certificates against the firmware's root CAs in `dev_flash/data/cert`. Appending your own CA to each of those files (`server/certswap.sh`) makes the game trust your server while keeping the
+  originals, so other games still work. RPCS3 joins the files into one PEM buffer, and the game's SSL library accepts every
+  certificate in it. No game patch is needed.
 - The PS3 negotiates TLS 1.2 with AES256-SHA256. The server also allows TLS 1.0 just in case.
 
 ## HTTP API

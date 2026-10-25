@@ -38,12 +38,13 @@ first line (`Version: 1.2`). Then open RPCS3 → **Manage → Game Patches**, ti
 Also recommended: the crowd fix from [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes).
 
 ## 4. Trust the host's certificate
-The game only talks to servers whose certificate it trusts, so replace RPCS3's PS3 root certificates with the host's.
+The game only talks to servers whose certificate it trusts, so the host's certificate gets added to each of RPCS3's PS3
+root certificate files. The originals stay in place, so other games keep working and there's nothing to undo.
 
 Linux / macOS, using the script from this repo:
 ```sh
 ./server/certswap.sh install /path/to/host-ca.pem
-# undo later:
+# optional: put the untouched originals back
 ./server/certswap.sh restore
 ```
 
@@ -51,11 +52,14 @@ Windows (PowerShell), using [`server/certswap.ps1`](../server/certswap.ps1). The
 the one containing `rpcs3.exe`:
 ```powershell
 powershell -ExecutionPolicy Bypass -File certswap.ps1 install C:\RPCS3 C:\Users\you\Downloads\ca.pem
-# undo later:
+# optional: put the untouched originals back
 powershell -ExecutionPolicy Bypass -File certswap.ps1 restore C:\RPCS3
 ```
-By hand instead: in `<RPCS3 folder>\dev_flash\data\cert`, copy all `.cer` files to a backup folder, then copy the host's
-`ca.pem` over each `.cer` file, keeping each original filename.
+By hand instead: in `<RPCS3 folder>\dev_flash\data\cert`, copy all `.cer` files to a backup folder, then open each
+`.cer` file in a text editor and paste the contents of the host's `ca.pem` at the end.
+
+Switching to another host: run `install` again with their `ca.pem`. It rebuilds the files from the backup, so the old
+host's certificate is dropped.
 
 ## 5. Graphics settings
 Right-click the game → **Create Custom Configuration**, and set the settings listed (with screenshots) in the
