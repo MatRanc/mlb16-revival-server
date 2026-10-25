@@ -13,8 +13,8 @@ plus four RPCS3 game patches, that brings back **Game Rooms** so you can play 1v
 | ✅ | Game Rooms: room list, joining, the player list, chat between players |
 | ✅ | Challenging a player and accepting it (Quick Menu) |
 | ✅ | After the accept: opponent info, game ID, and the clients agreeing on the match |
-| 🚧 | Peer-to-peer connection: NP ID lookup hang fixed with a patch, NP Signaling (RPCN) untested |
-| ❓ | The match itself |
+| ✅ | Peer-to-peer connection (NP Signaling through RPCN) and **playing a 1v1 game**, tested PC (Linux) vs Mac on one LAN |
+| ❓ | Reliability (one of two attempts dropped), end-of-game result reporting, play over Tailscale |
 
 Other modes (Diamond Dynasty, Online Rated, Franchise…) reach the server but need many more endpoints. They're out of
 scope for now.

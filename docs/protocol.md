@@ -115,4 +115,6 @@ are gone, so the "Skip live roster download" patch reports success instead, and 
 - Clients sometimes enter the only room as id 0 (`CHATTEXT_0_0`) instead of 1. The server treats both as one room.
 
 ## Not done yet
-- Everything after NP Signaling: `Natpunch`, `Join` and the match itself.
+- After the match connects, both clients call `POST mlb_games/create.xml`; the server gives an empty success.
+  `universal_profiles/view.xml?player_id=N` is also called. A dropped attempt showed `POST league_games/cancel.xml`.
+- Not done: end-of-game result reporting, and checking these replies' expected contents.
