@@ -62,7 +62,7 @@ for windows in (False, True):
 
         host, got = s.read_invite(s.make_invite('100.1.2.3', ca))
         assert host == '100.1.2.3' and got == ca
-        for bad in ('{"app": "x"}', s.make_invite('evil.example.com', ca),
+        for bad in ('{"app": "x"}', '[1, 2]', '"text"', s.make_invite('evil.example.com', ca),
                     s.make_invite('1.2.3.4', (certs / 'server.pem').read_bytes())):
             try:
                 s.read_invite(bad)

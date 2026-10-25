@@ -311,7 +311,7 @@ def make_invite(host_ip, ca_pem):
 def read_invite(text):
     """Validates an invite file (it comes from someone else). Returns (host_ip, ca_pem_bytes)."""
     d = json.loads(text)
-    if d.get('app') != APP_ID:
+    if not isinstance(d, dict) or d.get('app') != APP_ID:
         raise ValueError('This is not an MLB16 Online invite file.')
     host = str(ipaddress.ip_address(str(d.get('host', '')).strip()))   # an IP address and nothing else
     ca = str(d.get('ca', ''))

@@ -44,6 +44,8 @@ def friendly(line):
         d = json.loads(line)
     except ValueError:   # the server cuts long JSON lines short; anything else (errors, tracebacks) is shown
         return None if line.startswith('{') else line.rstrip()
+    if not isinstance(d, dict):
+        return line.rstrip()
     e, t = d.get('event'), d.get('t', '')
     who = d.get('player') or d.get('src') or ''
     text = {
