@@ -101,8 +101,16 @@ class App(tk.Tk):
         try:
             import sv_ttk
             sv_ttk.set_theme('dark')
+            # sv_ttk recolours every widget (tk_setPalette) on each <<ThemeChanged>>, and Tk 9 sends one after the first
+            # ttk widget and after every style.configure, wiping our hint/link/log colours. Apply its palette once
+            # now, before any widget exists, then disable it.
+            self.tk.call('configure_colors')
+            self.tk.eval('proc configure_colors {} {}')
         except Exception:   # the app works with the plain ttk theme too
             pass
+        style = ttk.Style(self)
+        style.configure('Hint.TLabel', foreground='#9a9a9a')   # fixed colours: "gray" differs between platforms
+        style.configure('Link.TLabel', foreground='#4ea1ff')
         self.cfg = Settings()
         self.server = None
         self.lines = queue.Queue()
@@ -128,7 +136,7 @@ class App(tk.Tk):
         ttk.Entry(f, textvariable=self.rpcs3_dir).grid(row=1, column=0, columnspan=2, sticky='ew', pady=4)
         ttk.Button(f, text='Browse…', command=self.pick_rpcs3).grid(row=1, column=2, padx=(8, 0))
         hint = ('The folder with rpcs3.exe.' if sys.platform == 'win32' else 'Usually found automatically.')
-        ttk.Label(f, text=hint, foreground='gray').grid(row=2, column=0, columnspan=3, sticky='w')
+        ttk.Label(f, text=hint, style='Hint.TLabel').grid(row=2, column=0, columnspan=3, sticky='w')
 
         ttk.Label(f, text='Who runs the server?', font=('', 11, 'bold')).grid(row=3, column=0, columnspan=3,
                                                                                 sticky='w', pady=(16, 0))
@@ -138,7 +146,7 @@ class App(tk.Tk):
         ttk.Radiobutton(f, text='A friend, who sent me an invite file', variable=self.mode, value='join',
                         command=self.refresh).grid(row=5, column=0, columnspan=2, sticky='w', pady=2)
         ttk.Button(f, text='Open invite…', command=self.open_invite).grid(row=5, column=2, padx=(8, 0))
-        self.invite_label = ttk.Label(f, foreground='gray')
+        self.invite_label = ttk.Label(f, style='Hint.TLabel')
         self.invite_label.grid(row=6, column=0, columnspan=3, sticky='w', padx=(28, 0))
 
         ttk.Label(f, text='Options', font=('', 11, 'bold')).grid(row=7, column=0, columnspan=3, sticky='w',
@@ -164,7 +172,7 @@ class App(tk.Tk):
 
         self.status = ttk.Label(f, justify='left')
         self.status.grid(row=13, column=0, columnspan=3, sticky='w', pady=(16, 0))
-        link = ttk.Label(f, text='Setup guide and help', foreground='#4ea1ff', cursor='hand2')
+        link = ttk.Label(f, text='Setup guide and help', style='Link.TLabel', cursor='hand2')
         link.grid(row=14, column=0, columnspan=3, sticky='w', pady=(12, 0))
         link.bind('<Button-1>', lambda e: webbrowser.open(REPO))
         return f
@@ -305,14 +313,15 @@ class App(tk.Tk):
         self.invite_ip.pack(side='left')
         ttk.Button(inv, text='Save invite file…', command=self.save_invite).pack(side='left', padx=8)
         ttk.Label(f, text='Send the invite file to your friend. It holds your address and your server certificate '
-                          '(never your private keys).', foreground='gray', wraplength=580, justify='left').grid(
+                          '(never your private keys).', style='Hint.TLabel', wraplength=580, justify='left').grid(
             row=4, column=0, sticky='w', pady=(4, 0))
 
         ttk.Label(f, text='Server activity', font=('', 11, 'bold')).grid(row=5, column=0, sticky='w', pady=(16, 0))
-        self.log = tk.Text(f, height=12, wrap='word', state='disabled', relief='flat')
+        self.log = tk.Text(f, height=12, wrap='word', state='disabled', relief='flat', borderwidth=0,
+                           background='#0b0b0b', foreground='#d8d8d8', padx=10, pady=8)   # terminal-like
         self.log.grid(row=6, column=0, sticky='nsew', pady=(4, 0))
         ttk.Label(f, text=f'If your firewall asks, allow network access. Logs and certificates: {s.data_dir()}',
-                  foreground='gray', wraplength=580, justify='left').grid(row=7, column=0, sticky='w', pady=(8, 0))
+                  style='Hint.TLabel', wraplength=580, justify='left').grid(row=7, column=0, sticky='w', pady=(8, 0))
         self.show_addresses()
         return f
 
