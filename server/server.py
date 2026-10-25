@@ -393,13 +393,15 @@ def fls_server():
 
 if __name__ == '__main__':
     threading.Thread(target=fls_server, daemon=True).start()
+    ports = []
     for port, tls in PORTS.items():
         try:
             srv = TLSServer(('0.0.0.0', port), Handler)
         except PermissionError:   # 443 is only telemetry; the game works without it
-            print(f'port {port} needs privileges, skipping it', flush=True)
+            print(f'port {port} skipped (optional telemetry; it needs admin rights)', flush=True)
             continue
         srv.use_tls = tls
         threading.Thread(target=srv.serve_forever, daemon=True).start()
-    print(f'listening on {list(PORTS)} + FLS {FLS_PORT}, logging to requests.jsonl', flush=True)
+        ports.append(port)
+    print(f'listening on {ports} + FLS {FLS_PORT}, logging to requests.jsonl', flush=True)
     threading.Event().wait()
