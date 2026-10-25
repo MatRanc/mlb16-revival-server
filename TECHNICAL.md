@@ -1,0 +1,150 @@
+# Technical details
+
+The [README](README.md) covers playing. This page is for people who want to know how it works, change it, build it,
+or do the same for another game. The deep dives are in [`docs/`](docs/).
+
+| | |
+|---|---|
+| [docs/protocol.md](docs/protocol.md) | hosts, TLS, the XML API, login, rooms, FLS, challenges, the pre-game handshake |
+| [docs/code-map.md](docs/code-map.md) | where things are in the game's code (addresses, our names, what's patched) |
+| [docs/endpoints.md](docs/endpoints.md) | all 347 API services the game knows, and which ones the server answers |
+| [docs/research.md](docs/research.md) | how to get the game's own config files from your copy and dig further |
+| [docs/setup-host.md](docs/setup-host.md), [setup-player.md](docs/setup-player.md) | the manual setup, without the app |
+
+## Graphics settings
+
+The app applies these when "Recommended graphics settings" is ticked, for MLB The Show 16 only (in the game's
+custom config). By hand: right-click the game in RPCS3 → **Create Custom Configuration**, then set:
+- **GPU:** Write Color Buffers, Strict Rendering Mode, ZCULL Accuracy *Precise*, Shader Quality *High*
+- **Advanced:** Read Color Buffers, Read Depth Buffer, Write Depth Buffer, Disable Vertex Cache
+- **CPU:** leave SPU XFloat Accuracy on *Approximate XFloat* and SPU Block Size on *Safe* (the defaults)
+
+Without them, parts of the crowd go dark and the picture-in-picture windows (like the runner's lead-off) have a black
+background. The crowd itself needs the **crowd fix patch** from
+[mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), which the app also installs.
+
+<table>
+  <tr>
+    <th>GPU</th>
+    <th>Advanced</th>
+    <th>CPU</th>
+  </tr>
+  <tr>
+    <td><img src="docs/images/settings-gpu.png" alt="GPU tab settings"></td>
+    <td><img src="docs/images/settings-advanced.png" alt="Advanced tab settings"></td>
+    <td><img src="docs/images/settings-cpu.png" alt="CPU tab settings"></td>
+  </tr>
+</table>
+
+## The patches
+
+All five are in [`patches/MLB16_online.yml`](patches/MLB16_online.yml). **Both players need all five.**
+
+| Patch | Why |
+|---|---|
+| Re-enable online menus | Update 1.10 replaced the online menu entry with an "ONLINE DISABLED" popup. |
+| Skip live roster download | Sony's roster files are gone. Everyone keeps the built-in roster, so rosters always match. |
+| Allow game room challenges | The "challenges allowed" flag is normally set by a step tied to Sony's servers, so the Challenge option never appeared. |
+| Fix NP ID lookup hang | RPCS3 never finishes the game's opponent lookup (`sceNpLookupNpIdAsync`), so both players hung on "Challenge accepted, waiting for a response". |
+| Faster game room player list | The room only re-downloads its player list every 30 s, and nothing tells it when someone joins. This makes it 8 s. |
+
+The NP ID lookup patch works around an RPCS3 bug. A fix in RPCS3 itself is on the
+[`fix-np-lookup-npid-async`](https://github.com/MatRanc/rpcs3/tree/fix-np-lookup-npid-async) branch of my fork. Until
+something like it is in an official build, keep the patch on.
+
+## How it works
+
+```
+  RPCS3 (you)                                         RPCS3 (friend)
+ ┌──────────────┐  game API (XML over HTTPS)  ┌─────────────┐  ┌──────────────┐
+ │ MLB The Show │────────────────────────────►│ server.py   │◄─│ MLB The Show │
+ │ 16 + patches │  FLS: rooms, chat,          │ (this repo) │  │ 16 + patches │
+ │              │────────────────────────────►│             │◄─│              │
+ └──┬────────┬──┘  challenges                 └─────────────┘  └──┬────────┬──┘
+    │        │                                                    │        │
+    │        │   sign-in, NP Signaling      ┌──────┐              │        │
+    │        └─────────────────────────────►│ RPCN │◄─────────────┘        │
+    │                                       └──────┘                       │
+    └──────────────────── the match itself, peer to peer ──────────────────┘
+```
+
+- **The game's online code is all still there.** Update 1.10 only blocked the way in, and the patches undo that.
+- **RPCS3's IP/Hosts switch** sends the game's dead Sony hostnames to this server. Adding your own certificate to
+  the PS3 firmware's root certificates makes the game trust it.
+- **The server** answers the game's XML web API and runs **FLS**, its live session server (AES-encrypted XML over TCP),
+  which relays room chat and challenges between players.
+- **RPCN** handles sign-in and NP Signaling, which connects the two games directly for the match.
+
+The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
+
+## Known limits
+- The player list is refreshed on a timer (8 s with the patch, 30 s without), so a player who just joined can take
+  that long to appear. As far as we can tell, the game only downloads the list when you join and on that timer.
+- Some player-list columns may show blank or zero: the column names are guesses, since the UI scripts are compiled.
+- Endpoints the server doesn't know get an empty "OK" reply. That's enough for everything Game Rooms needs so far.
+- The recommended graphics settings slow the game down on an M1 Mac (about 35 FPS in a match) but not on an RTX 3060 Ti.
+  Which setting costs the most, and which ones the dark crowd fix really needs, hasn't been narrowed down yet.
+
+## Building and development
+
+Run the app from source (this is also the way on Linux for now):
+```sh
+git clone https://github.com/MatRanc/mlb16-revival-server && cd mlb16-revival-server/app
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt      # Windows: .venv\Scripts\pip install -r requirements.txt
+.venv/bin/python mlb16_online.py               # Windows: .venv\Scripts\python mlb16_online.py
+```
+tkinter may be a separate package: `sudo dnf install python3-tkinter` (Fedora), `sudo apt install python3-tk`
+(Debian/Ubuntu), `brew install python-tk` (macOS with Homebrew's Python).
+
+- **Tests:** `python test_setup_logic.py` in `app/` runs the setup steps against fake RPCS3 folders (Linux and Windows
+  layouts).
+- **Builds:** [`.github/workflows/build-app.yml`](.github/workflows/build-app.yml) builds the Windows and macOS apps with
+  PyInstaller. It runs on a version tag (`v*`), which attaches both zips to a GitHub Release, or by hand from the
+  Actions tab.
+- **The server alone:** `python mlb16_online.py --server`, or `server/server.py` directly (it then keeps its
+  certificates and logs next to itself; see [docs/setup-host.md](docs/setup-host.md)).
+- **Without the app:** the manual setup is in [docs/setup-host.md](docs/setup-host.md) and
+  [docs/setup-player.md](docs/setup-player.md).
+
+What the app changes in RPCS3: `patches/BCUS01089_patch.yml` (its own file), the patches' entries in
+`patch_config.yml`, the game's custom config (`custom_configs/config_BCUS01089.yml`: network and graphics), and the
+PS3 root certificates in `dev_flash/data/cert` (each one becomes original + the host's CA; the originals are kept in
+`cert.orig`). Its own files (settings, certificates, logs) live in `%APPDATA%\mlb16-online`,
+`~/Library/Application Support/mlb16-online` or `~/.config/mlb16-online`.
+
+## Repo layout
+
+| | |
+|---|---|
+| `app/` | the MLB16 Online app: RPCS3 setup, server start/stop, invite files (`test_setup_logic.py` tests it) |
+| `server/server.py` | the server: game API, FLS, logging |
+| `server/make_certs.sh` | makes your own root CA and server certificate |
+| `server/certswap.sh`, `certswap.ps1` | adds the host's CA to RPCS3's certificates, keeping the originals (Linux/macOS, Windows) |
+| `patches/MLB16_online.yml` | the five RPCS3 patches |
+| `patches/MLB16_crowd_fix.yml` | the crowd fix from [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), installed by the app |
+| `tools/extract_gamedata.py` | extracts `servers_prod.xml` / `services.xml` from your installed update |
+
+Contributions and test reports are welcome. [AGENTS.md](AGENTS.md) has the ground rules: most importantly, never commit
+game files, Sony data, logs or certificate keys.
+
+## Reviving another game
+
+The same approach should work for other PS3 games whose servers are gone (another sports title, for example). What
+carried over from this project:
+1. **Find the hostnames and the API.** The game's own config files (here `servers_prod.xml` and `services.xml`, inside
+   the update's data archive) list every server and endpoint. [docs/research.md](docs/research.md) shows how they were
+   found and extracted.
+2. **Redirect and trust.** RPCS3's IP/Hosts switch sends the hostnames to your server; appending your own CA to the
+   PS3 root certificates makes the game accept it. That part is generic: see `app/setup_logic.py`.
+3. **Log everything, answer what's needed.** The server answers unknown calls with an empty "OK" and logs them, so you
+   play, read the log, find the reply parser in the EBOOT with Ghidra, and add a real reply. [AGENTS.md](AGENTS.md)
+   describes that loop for an AI agent.
+4. **Patch what can't be served.** Where the game checks something no server can answer anymore (here: the
+   "ONLINE DISABLED" popup, the live roster download), a small RPCS3 patch skips it.
+5. **Peer-to-peer goes through RPCN.** Matches use the PS3's NP Signaling, which RPCN already provides, so the server
+   only has to handle the lobby.
+
+Pointing an AI agent at this repo with "do this for game X" is a reasonable start: `docs/protocol.md`,
+`docs/code-map.md` and `AGENTS.md` describe what was done and how.
+

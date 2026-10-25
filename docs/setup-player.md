@@ -65,7 +65,7 @@ host's certificate is dropped.
 
 ## 5. Graphics settings
 Right-click the game → **Create Custom Configuration**, and set the settings listed (with screenshots) in the
-[README's graphics section](../README.md#graphics-settings). Without them, parts of the crowd go dark and
+[graphics section of TECHNICAL.md](../TECHNICAL.md#graphics-settings). Without them, parts of the crowd go dark and
 picture-in-picture windows get a black background. For the crowd itself, add the crowd fix patch from
 [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes).
 

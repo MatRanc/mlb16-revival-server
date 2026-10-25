@@ -261,10 +261,18 @@ class App(tk.Tk):
         want_ip, want_ca = self.target()
         ca = s.installed_ca(r)
         server = s.game_config_server(r)
-        rows = [('Patches installed and ticked', s.patches_status(r)),
-                (f'Game points at the server ({server or "not set"})', server is not None and server == want_ip),
-                ('Server certificate trusted', ca is not None and isinstance(want_ca, bytes) and ca == want_ca)]
-        self.status.config(text='\n'.join(('✓  ' if ok else '✗  ') + t for t, ok in rows))
+        rows = [(s.patches_status(r), 'Patches installed', 'Patches'),
+                (server is not None and server == want_ip, f'Game points at the server ({server})', 'Server address'),
+                (ca is not None and isinstance(want_ca, bytes) and ca == want_ca, 'Server certificate trusted',
+                 'Server certificate')]
+        if not any(ok for ok, _, _ in rows):
+            text = 'Not set up yet: click "Set up RPCS3".'
+        elif all(ok for ok, _, _ in rows):
+            text = '✓  Ready to play\n' + '\n'.join('     ' + done for _, done, _ in rows)
+        else:   # e.g. a new invite was opened: say what the next Set up will change
+            text = 'Click "Set up RPCS3" to finish:\n' + '\n'.join(
+                ('✓  ' + done) if ok else ('○  ' + todo + ': needs setup') for ok, done, todo in rows)
+        self.status.config(text=text)
 
     # ------------------------------------------------------------ host tab
 
