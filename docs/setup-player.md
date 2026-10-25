@@ -52,9 +52,19 @@ powershell -ExecutionPolicy Bypass -File certswap.ps1 restore C:\RPCS3
 By hand instead: in `<RPCS3 folder>\dev_flash\data\cert`, copy all `.cer` files to a backup folder, then copy the host's
 `ca.pem` over each `.cer` file, keeping each original filename.
 
-## 5. Play
+## 5. Graphics settings
+Right-click the game → **Create Custom Configuration** → **GPU** tab: turn on Write/Read Color Buffers, Write/Read
+Depth Buffer, Strict Rendering Mode and Disable Vertex Cache, and set Shader Precision to High. Without them, parts of the
+crowd go dark and picture-in-picture windows get a black background.
+
+## 6. Play
 With the host's server running: boot the game → **Game Rooms** → pick the room. Everyone in the room appears in the
 player list, and chat works. Select a player to challenge them.
+
+The first time, your computer may ask whether RPCS3 (and on the host, Python) may use the network. Allow it, on private
+and public networks on Windows, or the match can't connect.
+
+If a player is missing from the list, wait 30 s; if they still don't show up, leave the room and join it again.
 
 ## Troubleshooting
 - **"ONLINE DISABLED … no longer available":** the re-enable patch isn't ticked, or your game isn't v01.10.
@@ -62,3 +72,5 @@ player list, and chat works. Select a player to challenge them.
 - **"Your connection to The Show Online has been lost" right away:** the server isn't reachable (hosts switch IP, firewall, Tailscale), or the certificate isn't installed.
 - **"Downloading live roster failed":** the skip-roster patch isn't ticked.
 - **Stuck on "Challenge accepted, waiting for a response":** the NP ID lookup patch isn't ticked on one of the machines.
+- **Stuck on the stadium select screen:** back out and send a new challenge. Seen once, cause unknown.
+- **Dark crowd, or a black box around the runner's lead-off view:** see [Graphics settings](#5-graphics-settings).

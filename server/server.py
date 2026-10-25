@@ -137,7 +137,7 @@ def player_row(p):
 
 
 def lobby_players(req):
-    rid = int(req['query'].get('lobby_channel_id') or 1)
+    rid = int(req['query'].get('lobby_channel_id') or 0) or 1   # after a game the client asks for room 0; there is only room 1
     rows = ''.join(player_row(p) for p in BY_ID.values() if p.channel == rid)
     return ok(f'<lobby_channel_players page="1" total_pages="1">{rows}</lobby_channel_players>')
 
@@ -159,7 +159,7 @@ def lobby_quit(req):
 
 
 def lobby_show(req):
-    rid = int(req['query'].get('id') or 1)
+    rid = int(req['query'].get('id') or 0) or 1
     return ok(f'<lobby_channel id="{rid}" lobby_channel_id="{rid}" name="{esc(ROOMS.get(rid, "Room"))}"'
               ' min_skill="0" max_skill="100"/>')
 

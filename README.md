@@ -7,8 +7,8 @@ game patches that bring back **Game Rooms**: join a room, see each other, chat, 
 
 ![The first online game in years: Mets at Tigers, pitching on a Linux PC and batting on an M1 MacBook Air, both on RPCS3](docs/images/first-1v1.jpg)
 
-> **Status: it works!** First online 1v1 game played on October 25, 2026 (Linux PC vs M1 Mac, same home network).
-> Windows vs Windows over the internet is the next goal.
+> **Status: it works!** First online 1v1 game played on October 25, 2026 (Linux PC vs M1 Mac, same home network),
+> then Windows 11 vs M1 Mac the same day, through a full inning and a concede. Playing over the internet is next.
 > It's still early: expect rough edges, and please report what you find.
 
 | | |
@@ -18,8 +18,9 @@ game patches that bring back **Game Rooms**: join a room, see each other, chat, 
 | ✅ | Challenging a player, accepting, and the pre-game handshake |
 | ✅ | Peer-to-peer connection and **playing a 1v1 game** |
 | ❓ | Playing over the internet: the server through Tailscale, the match through RPCN's direct connection. Documented, not tested yet |
-| ❓ | Windows: the server, scripts and setup are written for it, but no game has been played on Windows yet |
-| ❓ | Reliability: one of the first two attempts dropped before the game started |
+| ✅ | Windows: server and game on Windows 11, playing against a Mac |
+| ✅ | Conceding: the other player accepts, and both games go back to the room |
+| ❓ | Reliability: one early attempt dropped before the game started, and one got stuck on stadium select |
 | ❓ | Saving results after a game |
 | ❌ | Other online modes (Diamond Dynasty, Online Rated, Franchise…): out of scope for now |
 
@@ -39,6 +40,10 @@ Every player needs:
 
 One player also runs the server: any PC with Python 3.10+. It can be the same machine they play on.
 
+Tested on:
+- Ryzen 5 2600X, 32 GB DDR4, RTX 3060 Ti: Fedora 44 and Windows 11 (same PC, dual boot)
+- MacBook Air M1, 16 GB, latest macOS
+
 The patches are made for the disc version's v01.10 EBOOT. The digital version (NPUA81353) has a different EBOOT and
 isn't supported yet.
 
@@ -48,8 +53,22 @@ isn't supported yet.
    other player reach it (same network, or [Tailscale](https://tailscale.com) over the internet).
 2. **Every player, host included,** follows [docs/setup-player.md](docs/setup-player.md): RPCN, network settings,
    the patches, and the host's certificate. On Windows there's a PowerShell script for the certificate step.
-3. Boot the game → **Game Rooms** → pick the room. When you both see each other (up to 30 s), select your friend,
+3. Set the **graphics settings** below, or parts of the stadium and the runner's lead-off window render dark or black.
+4. Boot the game → **Game Rooms** → pick the room. When you both see each other (up to 30 s), select your friend,
    choose **Challenge**, and they accept from the **Quick Menu** (SELECT).
+
+## Graphics settings
+
+Right-click the game in RPCS3 → **Create Custom Configuration** → **GPU** tab, and turn on:
+- Write Color Buffers, Read Color Buffers
+- Write Depth Buffer, Read Depth Buffer
+- Strict Rendering Mode
+- Disable Vertex Cache
+- Shader Precision: High
+
+Without them, parts of the crowd go dark and the picture-in-picture windows (like the runner's lead-off) have a black
+background. These are the settings from the [crowd fix write-up](https://github.com/MatRanc/mlb-show-rpcs3-fixes);
+which single one fixes which glitch hasn't been narrowed down.
 
 ## The patches
 
@@ -92,7 +111,8 @@ something like it is in an official build, keep the patch on.
 The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
 
 ## Known limits
-- Player lists refresh every 30 s (a timer in the game), so a player who just joined can take that long to appear.
+- Player lists only refresh every 30 s (a timer in the game), and sometimes not at all until you leave and rejoin the
+  room. The real server probably pushed join/leave notices to the game; this one doesn't yet.
 - Some player-list columns may show blank or zero: the column names are guesses, since the UI scripts are compiled.
 - Endpoints the server doesn't know get an empty "OK" reply. That's enough for everything Game Rooms needs so far.
 
