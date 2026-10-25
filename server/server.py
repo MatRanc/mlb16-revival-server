@@ -284,7 +284,8 @@ class FlsConn:
 
 def relay(src, xml, attrs):
     """Forward a player-to-player or zone message, stamped with the sender."""
-    stamped = re.sub(r'<message ', f'<message sender="plyr" senderID="{src.player.id}" ', xml.replace(
+    # the client shows `sender` as the chat name, so it carries the username (senderID is the player id)
+    stamped = re.sub(r'<message ', f'<message sender="{esc(src.player.name)}" senderID="{src.player.id}" ', xml.replace(
         ' sender="', ' x_sender="'), count=1)
     with STATE:
         if attrs.get('target') == 'plyr':

@@ -88,7 +88,7 @@ are gone, so the "Skip live roster download" patch reports success instead, and 
 - **Plugin layers seen:**
   - `MLBAM`, registered after login.
   - In a game room: `CHATTEXT_<a>_<room>` for chat, as `<ChatText>message</ChatText>` sent to `target="zone"`, and `CHATOOB_<a>_<room>`, an out-of-band layer used for challenges.
-- **Relaying:** challenge and chat payloads go client to client. The server forwards `target="plyr"` messages to that player and `target="zone"` messages to everyone else registered on the same layer, stamping `sender="plyr" senderID=<id>`. It doesn't need to understand the payloads.
+- **Relaying:** challenge and chat payloads go client to client. The server forwards `target="plyr"` messages to that player and `target="zone"` messages to everyone else registered on the same layer, stamping `sender=<username> senderID=<id>` (the client shows `sender` as the chat name). It doesn't need to understand the payloads.
 
 ## Not done yet
 - The challenge handshake and the start of a game (`mlb_game.create` / `mlb_game.start`).
