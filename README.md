@@ -68,13 +68,18 @@ Without them, parts of the crowd go dark and the picture-in-picture windows (lik
 background. The crowd itself still needs the **crowd fix patch** from
 [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), which also explains the rendering bug.
 
-<details><summary>Screenshots of the tested settings</summary>
-
-![GPU tab](docs/images/settings-gpu.png)
-![Advanced tab](docs/images/settings-advanced.png)
-![CPU tab](docs/images/settings-cpu.png)
-
-</details>
+<table>
+  <tr>
+    <th>GPU</th>
+    <th>Advanced</th>
+    <th>CPU</th>
+  </tr>
+  <tr>
+    <td><img src="docs/images/settings-gpu.png" alt="GPU tab settings"></td>
+    <td><img src="docs/images/settings-advanced.png" alt="Advanced tab settings"></td>
+    <td><img src="docs/images/settings-cpu.png" alt="CPU tab settings"></td>
+  </tr>
+</table>
 
 ## The patches
 
