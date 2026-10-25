@@ -53,9 +53,10 @@ By hand instead: in `<RPCS3 folder>\dev_flash\data\cert`, copy all `.cer` files 
 `ca.pem` over each `.cer` file, keeping each original filename.
 
 ## 5. Graphics settings
-Right-click the game → **Create Custom Configuration** → **GPU** tab: turn on Write/Read Color Buffers, Write/Read
-Depth Buffer, Strict Rendering Mode and Disable Vertex Cache, and set Shader Precision to High. Without them, parts of the
-crowd go dark and picture-in-picture windows get a black background.
+Right-click the game → **Create Custom Configuration**, and set the settings listed (with screenshots) in the
+[README's graphics section](../README.md#graphics-settings). Without them, parts of the crowd go dark and
+picture-in-picture windows get a black background. For the crowd itself, add the crowd fix patch from
+[mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes).
 
 ## 6. Play
 With the host's server running: boot the game → **Game Rooms** → pick the room. Everyone in the room appears in the

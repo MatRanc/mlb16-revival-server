@@ -59,16 +59,22 @@ isn't supported yet.
 
 ## Graphics settings
 
-Right-click the game in RPCS3 → **Create Custom Configuration** → **GPU** tab, and turn on:
-- Write Color Buffers, Read Color Buffers
-- Write Depth Buffer, Read Depth Buffer
-- Strict Rendering Mode
-- Disable Vertex Cache
-- Shader Precision: High
+Right-click the game in RPCS3 → **Create Custom Configuration**, then set:
+- **GPU:** Write Color Buffers, Strict Rendering Mode, ZCULL Accuracy *Precise*, Shader Quality *High*
+- **Advanced:** Read Color Buffers, Read Depth Buffer, Write Depth Buffer, Disable Vertex Cache
+- **CPU:** leave SPU XFloat Accuracy on *Approximate XFloat* and SPU Block Size on *Safe* (the defaults)
 
 Without them, parts of the crowd go dark and the picture-in-picture windows (like the runner's lead-off) have a black
-background. These are the settings from the [crowd fix write-up](https://github.com/MatRanc/mlb-show-rpcs3-fixes);
-which single one fixes which glitch hasn't been narrowed down.
+background. The crowd itself still needs the **crowd fix patch** from
+[mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), which also explains the rendering bug.
+
+<details><summary>Screenshots of the tested settings</summary>
+
+![GPU tab](docs/images/settings-gpu.png)
+![Advanced tab](docs/images/settings-advanced.png)
+![CPU tab](docs/images/settings-cpu.png)
+
+</details>
 
 ## The patches
 
