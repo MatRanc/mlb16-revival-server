@@ -114,6 +114,9 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
 Contributions and test reports are welcome. [AGENTS.md](AGENTS.md) has the ground rules: most importantly, never commit
 game files, Sony data, logs or certificate keys.
 
+**Fun fact:** getting from the "ONLINE DISABLED" popup to a full 1v1 game took about 8 hours and roughly $60 in Claude
+API costs.
+
 Related: [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes) fixes the crowd rendering bug on
 RPCS3, and documents the Ghidra/RenderDoc workflow used for both projects.
 
