@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Baseball with two orbit rings. Rendered to icon.png (window/taskbar icon and the builds' icon). -->
+  <defs>
+    <radialGradient id="ball" cx="38%" cy="32%" r="75%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.65" stop-color="#f3efe6"/>
+      <stop offset="1" stop-color="#c9c1b0"/>
+    </radialGradient>
+    <clipPath id="ballclip"><circle cx="256" cy="256" r="148"/></clipPath>
+    <clipPath id="front" clipPathUnits="userSpaceOnUse"><rect x="-100" y="256" width="712" height="400"/></clipPath>
+  </defs>
+
+  <!-- back halves of the rings -->
+  <g fill="none" stroke="#2f7de1" stroke-width="18">
+    <ellipse cx="256" cy="256" rx="232" ry="78" transform="rotate(-28 256 256)"/>
+    <ellipse cx="256" cy="256" rx="232" ry="78" transform="rotate(28 256 256)"/>
+  </g>
+
+  <!-- the ball -->
+  <circle cx="256" cy="256" r="148" fill="url(#ball)" stroke="#8f8673" stroke-width="5"/>
+  <g clip-path="url(#ballclip)" fill="none">
+    <g stroke="#d3312b" stroke-width="7" stroke-linecap="round">
+      <path d="M 168 118 C 238 196 238 316 168 394"/>
+      <path d="M 344 118 C 274 196 274 316 344 394"/>
+    </g>
+    <!-- stitches: short dashes across a wide stroke along each seam -->
+    <g stroke="#d3312b" stroke-width="26" stroke-dasharray="5 15">
+      <path d="M 168 118 C 238 196 238 316 168 394"/>
+      <path d="M 344 118 C 274 196 274 316 344 394"/>
+    </g>
+  </g>
+
+  <!-- front halves of the rings, drawn over the ball -->
+  <g fill="none" stroke="#2f7de1" stroke-width="18">
+    <g transform="rotate(-28 256 256)"><ellipse cx="256" cy="256" rx="232" ry="78" clip-path="url(#front)"/></g>
+    <g transform="rotate(28 256 256)"><ellipse cx="256" cy="256" rx="232" ry="78" clip-path="url(#front)"/></g>
+  </g>
+</svg>

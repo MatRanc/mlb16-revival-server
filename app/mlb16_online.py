@@ -27,6 +27,23 @@ def run_server():
     runpy.run_path(str(s.bundle_dir() / 'server' / 'server.py'), run_name='__main__')
 
 
+def linux_launcher():
+    """A .desktop entry, so GNOME/KDE show "MLB16 Online" and the icon (matched by window class) instead of "Tk".
+    Also puts the app in the app menu."""
+    icon = s.data_dir() / 'icon.png'
+    entry = Path.home() / '.local' / 'share' / 'applications' / 'mlb16-online.desktop'
+    cmd = [sys.executable] if getattr(sys, 'frozen', False) else [sys.executable, os.path.abspath(__file__)]
+    text = ('[Desktop Entry]\nType=Application\nName=MLB16 Online\nComment=Play MLB The Show 16 online on RPCS3\n'
+            f'Exec={" ".join(chr(34) + c + chr(34) for c in cmd)}\nIcon={icon}\nStartupWMClass=Mlb16-online\n'
+            'Categories=Game;\nTerminal=false\n')
+    try:
+        icon.write_bytes((s.bundle_dir() / 'app' / 'icon.png').read_bytes())
+        if not entry.exists() or entry.read_text() != text:
+            s.write_text(entry, text)
+    except OSError:   # cosmetic only
+        pass
+
+
 class Settings(dict):
     path = s.data_dir() / 'settings.json'
 
@@ -65,8 +82,17 @@ def friendly(line):
 
 class App(tk.Tk):
     def __init__(self):
-        super().__init__()
+        if sys.platform == 'win32':   # own taskbar entry and icon, instead of being grouped under python.exe
+            import ctypes
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('MatRanc.MLB16Online')
+        super().__init__(className='mlb16-online')   # Tk turns this into the window class "Mlb16-online"
+        if sys.platform.startswith('linux'):
+            linux_launcher()
         self.title('MLB16 Online')
+        try:
+            self.iconphoto(True, tk.PhotoImage(file=str(s.bundle_dir() / 'app' / 'icon.png')))
+        except tk.TclError:
+            pass
         self.minsize(640, 560)
         try:
             import sv_ttk
