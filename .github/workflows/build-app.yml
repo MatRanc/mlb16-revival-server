@@ -42,7 +42,7 @@ jobs:
       - name: Package (macOS)
         if: runner.os == 'macOS'
         run: cd dist && ditto -c -k --keepParent MLB16-Online.app "../${{ matrix.asset }}"
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.asset }}
           path: app/${{ matrix.asset }}
