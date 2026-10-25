@@ -5,6 +5,8 @@
 Sony shut down the game's online service in 2020 with update 1.10. This repo is a small private server plus four RPCS3
 game patches that bring back **Game Rooms**: join a room, see each other, chat, send a challenge, and play a full game.
 
+![The first online game in years: Mets at Tigers, pitching on a Linux PC and batting on an M1 MacBook Air, both on RPCS3](docs/images/first-1v1.jpg)
+
 > **Status: it works!** First online 1v1 game played on October 25, 2026 (Linux PC vs M1 Mac, same home network).
 > It's still early: expect rough edges, and please report what you find.
 
