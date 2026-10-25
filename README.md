@@ -1,7 +1,7 @@
 # MLB The Show 16 revival server (PS3 / RPCS3)
 
 Sony shut down *MLB The Show 16*'s online service on July 28, 2020, with update 1.10. This is a small private server,
-plus three RPCS3 game patches, that brings back **Game Rooms** so you can play 1v1 against a friend, both on RPCS3.
+plus four RPCS3 game patches, that brings back **Game Rooms** so you can play 1v1 against a friend, both on RPCS3.
 
 **Status: work in progress.** What works so far:
 
@@ -12,16 +12,18 @@ plus three RPCS3 game patches, that brings back **Game Rooms** so you can play 1
 | ✅ | FLS session server (encrypted, now understood) |
 | ✅ | Game Rooms: room list, joining, the player list, chat between players |
 | ✅ | Challenging a player and accepting it (Quick Menu) |
-| 🚧 | Starting the match after the accept: `mlb_games/start` and `players/info2` replies added, untested |
-| ❓ | The peer-to-peer match itself (NP Signaling through RPCN) |
+| ✅ | After the accept: opponent info, game ID, and the clients agreeing on the match |
+| 🚧 | Peer-to-peer connection: NP ID lookup hang fixed with a patch, NP Signaling (RPCN) untested |
+| ❓ | The match itself |
 
 Other modes (Diamond Dynasty, Online Rated, Franchise…) reach the server but need many more endpoints. They're out of
 scope for now.
 
 ## How it works, in short
 - The game still has all its online code. Update 1.10 only swapped the menu's "go online" check for an "ONLINE DISABLED"
-  popup, and the first patch undoes that. The other two skip Sony's (deleted) live roster download and enable game
-  room challenges, which normally switch on after a step tied to Sony's servers.
+  popup, and the first patch undoes that. The others skip Sony's (deleted) live roster download, enable game
+  room challenges (which normally switch on after a step tied to Sony's servers), and work around an RPCS3
+  NP lookup call that never finishes.
 - RPCS3's **RPCN** stands in for PSN: sign-in tickets, friends, and the peer-to-peer connection.
 - RPCS3's **IP/Hosts switch** points the game's dead hostnames at this server. Replacing the PS3 firmware's root
   certificates with your own makes the game trust it.
@@ -44,7 +46,7 @@ The full write-up of the protocol is in [docs/protocol.md](docs/protocol.md).
 | | |
 |---|---|
 | `server/` | `server.py` (the server), `make_certs.sh` (your CA), `certswap.sh` (install a CA into RPCS3) |
-| `patches/MLB16_online.yml` | the three RPCS3 patches: re-enable online menus, skip live roster, allow challenges |
+| `patches/MLB16_online.yml` | the four RPCS3 patches: re-enable online menus, skip live roster, allow challenges, fix NP ID lookup hang |
 | `docs/protocol.md` | hosts, TLS, the XML API, login and room flows, the FLS protocol |
 | `docs/endpoints.md` | all 347 game API services the client knows, and which ones the server implements |
 | `docs/code-map.md` | where things are in the game's code (addresses and our names) |

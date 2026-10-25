@@ -54,6 +54,10 @@ File offset = virtual address − `0x10000` for the data and text segments of th
 | `0x255b1c` | Builds the player popup menu. "CHALLENGE EXHIBITION GAME" requires the flag at `obj+0x300`, special modes off, not yourself, not blocked, and opponent status 0/1. **Patched** at `0x255c68` / `0x255ccc`. |
 | `0x1cac94` | Accepting a challenge. Refuses unless `obj+0x300` is set. **Patched** at `0x1cacc4`. |
 | `0xb50b8`, `0xb4cf0`, `0xb4eb0` | Screen-change hook that sets `obj+0x300` ("Challenges CAN be accepted") from a list of allowed screens (`ol_GameRoom` is one) and the game mode. In our setup it ends up 0. |
+| `0x1d1b84`, `0x1d1c10`, `0x1d1e04` | Challenge module `GetGameID`: start (sends 10500), update, receive (10501 stores the game uuid and match settings). |
+| `0x1d38a0`, `0x1d3a70` | Challenge module `Natpunch`: start (host connects / guest listens), update. |
+| `0x1039e88`… | Challenge module class names and vtables (`CChallengeModule*`). |
+| `0x7a9c74` | NP connection state machine (`olNpHandlerPS3.cpp`): `sceNpLookupNpIdAsync` → poll → `sceNpSignalingCreateCtx` / `ActivateConnection`. **Patched** at `0x7a9e08` / `0x7a9e0c` (skip the poll). |
 | `0xb3588` | Post-game return to the online menus; also sets `obj+0x300`. |
 
 ## Game data

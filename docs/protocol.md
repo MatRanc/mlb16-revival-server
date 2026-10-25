@@ -104,9 +104,15 @@ are gone, so the "Skip live roster download" patch reports success instead, and 
      `<player …/>`; it fills the CHALLENGER_PROFILE table.
   3. The challenger calls `POST mlb_games/start.xml` (`game_mode=0&opponent_player_id=<id>`). The reply must be
      `<game uuid="…"/>`; the client stores the uuid as the match ID.
-  4. The two clients exchange BinMsg protocol 0 messages (`10500` both ways, then `10501`, 108 bytes, from the challenger), relayed by the server.
+  4. The two clients exchange BinMsg protocol 0 messages, relayed by the server: `10500` both ways, then `10501`
+     (108 bytes) from the challenger, carrying match settings and the game uuid.
+- These steps are "challenge modules" run in order: … `GetGameID` (10500/10501) → `SetSeed` → `Natpunch` → `Join` →
+  `UserSettings` → … → `Start`.
+- Before connecting, each client resolves the opponent's online ID with `sceNpLookupNpIdAsync`, then sets up
+  **NP Signaling** (`sceNpSignalingCreateCtx` / `ActivateConnection`) to get a direct connection. RPCS3 never completes
+  that lookup's transaction, so `sceNpLookupPollAsync` returns "busy" forever. The "Fix NP ID lookup hang" patch skips
+  the poll; RPCS3 has already filled in the NP ID.
 - Clients sometimes enter the only room as id 0 (`CHATTEXT_0_0`) instead of 1. The server treats both as one room.
 
 ## Not done yet
-- The challenge handshake and the start of a game (`mlb_game.create` / `mlb_game.start`).
-- The peer-to-peer match itself, which runs over NP Signaling through RPCN.
+- Everything after NP Signaling: `Natpunch`, `Join` and the match itself.

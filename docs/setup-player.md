@@ -20,10 +20,11 @@ Configuration → Network:
 - IP/Hosts switches: `production.mlb16.online.scea.com=<host IP>`
 
 ## 3. Patches
-Manage → Game Patches → drag [`patches/MLB16_online.yml`](../patches/MLB16_online.yml) onto the window, then tick all three:
+Manage → Game Patches → drag [`patches/MLB16_online.yml`](../patches/MLB16_online.yml) onto the window, then tick all four:
 - **Re-enable online menus.** Update 1.10 replaced the online entry point with an "ONLINE DISABLED" popup.
 - **Skip live roster download.** Sony's roster files are gone. Everyone keeps the built-in roster, so rosters always match.
 - **Allow game room challenges.** The game only enables challenges after a server-driven step we don't replicate yet, so the Challenge option would never appear.
+- **Fix NP ID lookup hang.** RPCS3 never finishes the game's opponent ID lookup (`sceNpLookupNpIdAsync`), so both players would hang on "Challenge accepted, waiting for a response".
 
 If drag and drop doesn't work (it may not on macOS), copy the file into RPCS3's `patches/` folder as `imported_patch.yml`.
 To tick patches without the checkboxes, add them to RPCS3's `patch_config.yml`.
@@ -59,3 +60,4 @@ player list, and chat works. Select a player to challenge them.
 - **"The Online features of MLB The Show are disabled":** PSN sign-in failed. Check that PSN status is RPCN and you're logged in.
 - **"Your connection to The Show Online has been lost" right away:** the server isn't reachable (hosts switch IP, firewall, Tailscale), or the certificate isn't installed.
 - **"Downloading live roster failed":** the skip-roster patch isn't ticked.
+- **Stuck on "Challenge accepted, waiting for a response":** the NP ID lookup patch isn't ticked on one of the machines.
