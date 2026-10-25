@@ -1,0 +1,51 @@
+name: Build MLB16 Online app
+
+# Runs on a version tag (v1.0, v1.1, ...) and attaches the builds to a GitHub Release,
+# or by hand from the Actions tab (builds are then downloadable from the run page).
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            asset: MLB16-Online-Windows.zip
+          - os: macos-latest
+            asset: MLB16-Online-macOS.zip
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt pyinstaller==6.22.3
+      - run: python test_setup_logic.py
+      - run: >
+          pyinstaller --noconfirm --clean --onefile --windowed --name MLB16-Online
+          --add-data "../patches/MLB16_online.yml:patches" --add-data "../patches/MLB16_crowd_fix.yml:patches"
+          --add-data "../server/server.py:server" --collect-data sv_ttk mlb16_online.py
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        run: cd dist && 7z a "../${{ matrix.asset }}" MLB16-Online.exe
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        run: cd dist && ditto -c -k --keepParent MLB16-Online.app "../${{ matrix.asset }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: app/${{ matrix.asset }}
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: app/${{ matrix.asset }}

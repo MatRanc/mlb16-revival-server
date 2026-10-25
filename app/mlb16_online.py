@@ -14,6 +14,9 @@ REPO = 'https://github.com/MatRanc/mlb16-revival-server'
 
 
 def run_server():
+    # server.py is loaded at runtime, so PyInstaller can't see its imports: name them here to get them bundled
+    import base64, http.server, re, socket, ssl, struct, time, urllib.parse, uuid  # noqa: F401
+    from Crypto.Cipher import AES  # noqa: F401
     os.environ['MLB16_DATA_DIR'] = str(s.data_dir())
     certs = s.ensure_host_certs()
     os.chdir(s.data_dir())
