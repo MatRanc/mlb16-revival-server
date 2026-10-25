@@ -33,7 +33,7 @@ def linux_launcher():
     icon = s.data_dir() / 'icon.png'
     entry = Path.home() / '.local' / 'share' / 'applications' / 'mlb16-online.desktop'
     cmd = [sys.executable] if getattr(sys, 'frozen', False) else [sys.executable, os.path.abspath(__file__)]
-    text = ('[Desktop Entry]\nType=Application\nName=MLB16 Online\nComment=Play MLB The Show 16 online on RPCS3\n'
+    text = ('[Desktop Entry]\nType=Application\nName=MLB16 Online Launcher\nComment=Play MLB The Show 16 online on RPCS3\n'
             f'Exec={" ".join(chr(34) + c + chr(34) for c in cmd)}\nIcon={icon}\nStartupWMClass=Mlb16-online\n'
             'Categories=Game;\nTerminal=false\n')
     try:
@@ -48,7 +48,7 @@ class Settings(dict):
     path = s.data_dir() / 'settings.json'
 
     def __init__(self):
-        super().__init__(mode='host', crowd_fix=True, graphics=True)
+        super().__init__(mode='host', crowd_fix=True, graphics=True, picture='720p')
         try:
             self.update(json.loads(self.path.read_text()))
         except (OSError, ValueError):
@@ -92,7 +92,7 @@ class App(tk.Tk):
         super().__init__(className='mlb16-online')   # Tk turns this into the window class "Mlb16-online"
         if sys.platform.startswith('linux'):
             linux_launcher()
-        self.title('MLB16 Online')
+        self.title('MLB16 Online Launcher')
         try:
             self.iconphoto(True, tk.PhotoImage(file=str(s.bundle_dir() / 'app' / 'icon.png')))
         except tk.TclError:
@@ -149,16 +149,23 @@ class App(tk.Tk):
             row=8, column=0, columnspan=3, sticky='w', pady=2)
         ttk.Checkbutton(f, text='Recommended graphics settings (fixes dark crowd and black boxes)',
                         variable=self.graphics).grid(row=9, column=0, columnspan=3, sticky='w', pady=2)
+        pic = ttk.Frame(f)
+        pic.grid(row=10, column=0, columnspan=3, sticky='w', pady=(6, 0))
+        self.picture = tk.StringVar(value=self.cfg['picture'])
+        ttk.Label(pic, text='Picture:').pack(side='left')
+        ttk.Radiobutton(pic, text='720p (fastest)', variable=self.picture, value='720p').pack(side='left', padx=(10, 0))
+        ttk.Radiobutton(pic, text='1080p (sharper, needs a stronger GPU)', variable=self.picture,
+                        value='1080p').pack(side='left', padx=(10, 0))
 
         ttk.Button(f, text='Set up RPCS3', style='Accent.TButton', command=self.do_setup).grid(
-            row=10, column=0, columnspan=3, sticky='ew', pady=(18, 4), ipady=4)
+            row=11, column=0, columnspan=3, sticky='ew', pady=(18, 4), ipady=4)
         ttk.Button(f, text='Launch RPCS3', command=self.launch_rpcs3).grid(
-            row=11, column=0, columnspan=3, sticky='ew', ipady=2)
+            row=12, column=0, columnspan=3, sticky='ew', ipady=2)
 
         self.status = ttk.Label(f, justify='left')
-        self.status.grid(row=12, column=0, columnspan=3, sticky='w', pady=(16, 0))
+        self.status.grid(row=13, column=0, columnspan=3, sticky='w', pady=(16, 0))
         link = ttk.Label(f, text='Setup guide and help', foreground='#4ea1ff', cursor='hand2')
-        link.grid(row=13, column=0, columnspan=3, sticky='w', pady=(12, 0))
+        link.grid(row=14, column=0, columnspan=3, sticky='w', pady=(12, 0))
         link.bind('<Button-1>', lambda e: webbrowser.open(REPO))
         return f
 
@@ -237,13 +244,13 @@ class App(tk.Tk):
             return
         try:
             s.install_patches(r, crowd_fix=self.crowd.get())
-            s.install_game_config(r, ip, graphics=self.graphics.get())
+            s.install_game_config(r, ip, graphics=self.graphics.get(), picture=self.picture.get())
             s.install_ca(r, ca)
         except OSError as e:
             messagebox.showerror('Setup failed', f'{e}\n\nIs RPCS3 closed, and is this the right folder?')
             return
         self.cfg.update(rpcs3_dir=str(r.root), mode=self.mode.get(), crowd_fix=self.crowd.get(),
-                        graphics=self.graphics.get())
+                        graphics=self.graphics.get(), picture=self.picture.get())
         self.cfg.save()
         self.refresh()
         messagebox.showinfo('Done', 'RPCS3 is set up. Start the game, then go to Online → Game Rooms.'

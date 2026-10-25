@@ -9,7 +9,7 @@ game patches that bring back **Game Rooms**: join a room, see each other, chat, 
 
 > **Status: it works!** First online 1v1 game played on October 25, 2026 (Linux PC vs M1 Mac, same home network),
 > then Windows 11 vs M1 Mac the same day, through a full inning and a concede, and then over the internet (home
-> Wi-Fi vs a phone hotspot, through Tailscale), set up entirely with the app.
+> Wi-Fi vs a phone hotspot, through Tailscale), set up entirely with the launcher.
 > It's still early: expect rough edges, and please report what you find.
 
 | | |
@@ -21,7 +21,7 @@ game patches that bring back **Game Rooms**: join a room, see each other, chat, 
 | ✅ | Playing over the internet: the server through Tailscale, the match through RPCN's direct connection (home Wi-Fi vs a phone hotspot) |
 | ✅ | Windows: server and game on Windows 11, playing against a Mac |
 | ✅ | Conceding: the other player accepts, and both games go back to the room |
-| ✅ | **MLB16 Online app**: set up RPCS3 and host or join with an invite file, tested on Fedora, Windows 11 and macOS |
+| ✅ | **MLB16 Online Launcher**: set up RPCS3 and host or join with an invite file, tested on Fedora, Windows 11 and macOS |
 | ❓ | Reliability: one early attempt dropped before the game started, one got stuck on stadium select, and RPCS3 once crashed mid-game with a graphics error |
 | ❓ | Saving results after a game |
 | ❌ | Other online modes (Diamond Dynasty, Online Rated, Franchise…): out of scope for now |
@@ -41,7 +41,7 @@ Every player needs:
 - **A free RPCN account** (RPCS3's stand-in for PSN): in RPCS3, **Configuration → RPCN → Create Account**, then
   confirm it with the token from the email. Each player needs their own, and has to be logged in to it.
 
-One player also hosts the server, usually on the PC they play on. The app does that too.
+One player also hosts the server, usually on the PC they play on. The launcher does that too.
 
 Tested on:
 - Ryzen 5 2600X, 32 GB DDR4, RTX 3060 Ti: Fedora 44 and Windows 11 (same PC, dual boot)
@@ -53,14 +53,14 @@ isn't supported yet.
 
 ## Setup
 
-Download **MLB16 Online** from the [Releases page](https://github.com/MatRanc/mlb16-revival-server/releases/latest)
+Download **MLB16 Online Launcher** from the [Releases page](https://github.com/MatRanc/mlb16-revival-server/releases/latest)
 (Windows or macOS) and unzip it. It sets up RPCS3 in one click (the patches, the game's network and graphics
 settings, and the server certificate), runs the server, and makes invite files. It only changes MLB The Show 16:
 your other games keep their settings and their online features.
 
-The app isn't signed, so the first launch needs one extra click:
+The launcher isn't signed, so the first launch needs one extra click:
 - **Windows:** "Windows protected your PC" → **More info** → **Run anyway**.
-- **macOS:** right-click the app → **Open** → **Open**. If macOS still refuses, go to System Settings → Privacy &
+- **macOS:** right-click the launcher → **Open** → **Open**. If macOS still refuses, go to System Settings → Privacy &
   Security and click **Open Anyway**.
 - **Linux:** no download yet. Run it from source (see [TECHNICAL.md](TECHNICAL.md#building-and-development)).
 
@@ -73,7 +73,8 @@ The app isn't signed, so the first launch needs one extra click:
 
 **The host:**
 1. **Set up RPCS3** tab → "Me, on this computer" → **Set up RPCS3**.
-2. **Host a game** tab → **Start server**. Allow network access if your firewall asks. Keep the app open while you
+   Under **Picture**, 720p runs fastest; 1080p is sharper if your graphics card can handle it.
+2. **Host a game** tab → **Start server**. Allow network access if your firewall asks. Keep the launcher open while you
    play: closing it stops the server.
 3. **Save invite file…** and send it to your friend (Discord, email, anything: it holds your address and your
    public certificate, no secrets). Pick the Tailscale address if they're not on your home network (see below).
@@ -96,7 +97,7 @@ port forwarding. Tested: host on home Wi-Fi, other player on a phone hotspot.
    Your computer then shows up in their Tailscale. Sharing gives access to that one computer only, not your network,
    and you can stop sharing from the same menu.
 3. **The host** opens the **Host a game** tab (Tailscale has to be running), picks the **Tailscale** address,
-   saves the invite file and sends it. Your friend opens it in the app and clicks **Set up RPCS3**.
+   saves the invite file and sends it. Your friend opens it in the launcher and clicks **Set up RPCS3**.
 
 **Does Tailscale slow down Discord or the game?** No. Tailscale only carries traffic sent to the other computer's
 Tailscale address, which here is just the game server (logins, the room list, chat and challenges: very little data).
@@ -118,9 +119,12 @@ never starts, make sure UPnP is on in both routers.
 - **A player is missing from the room:** wait up to 8 s. Still missing: leave the room and join it again.
 - **Stuck on the stadium select screen:** back out and send a new challenge. Seen once, cause unknown.
 - **Dark crowd, or a black box around the runner's lead-off view:** the graphics settings aren't on. Keep
-  "Recommended graphics settings" ticked in the app and run **Set up RPCS3** again.
-- **The game runs slow (seen on an M1 Mac):** the recommended graphics settings cost performance on weaker GPUs.
-  Untick them and run **Set up RPCS3** again. The crowd may look darker, but the game runs faster.
+  "Recommended graphics settings" ticked in the launcher and run **Set up RPCS3** again.
+- **The game runs slow:** pick **720p** in the launcher and run **Set up RPCS3** again. Still slow: untick
+  "Recommended graphics settings" too (the crowd may look darker, but the game runs faster).
+- **The match freezes for both players:** one player's RPCS3 stopped, and the other game is waiting for it. Close
+  both games and start again. If it keeps happening, run **Set up RPCS3** again (it resets the settings that froze
+  matches in testing), and keep your RPCS3 log: it says what went wrong.
 - **Something else:** before restarting anything, save the RPCS3 log (`RPCS3.log`: in the RPCS3 folder on Windows,
   `~/Library/Caches/rpcs3` on macOS, `~/.cache/rpcs3` on Linux) and the host's server log (`requests.jsonl` in the
   folder shown at the bottom of the **Host a game** tab), then open an issue.
@@ -129,14 +133,14 @@ never starts, make sure UPnP is on in both routers.
 
 Fair question for any download from a stranger on the internet. What this project does and doesn't do:
 
-- **It's all open source.** The app, the server and the patches are plain Python and YAML in this repo. The
+- **It's all open source.** The launcher, the server and the patches are plain Python and YAML in this repo. The
   downloads on the Releases page are built by GitHub from this exact code (you can see each build's log under
   [Actions](https://github.com/MatRanc/mlb16-revival-server/actions)). Windows and macOS warn about them only because
   they aren't signed, which costs money.
 - **Don't take my word for it.** Download the repo as a ZIP and give it to an AI assistant (Claude, ChatGPT,
   DeepSeek…) with a question like "Is this safe to run? What does it change on my computer?" It's small enough for
   that, or have a technical friend look.
-- **It only changes RPCS3, and only for this game.** The app writes MLB The Show 16's patches and per-game settings,
+- **It only changes RPCS3, and only for this game.** The launcher writes MLB The Show 16's patches and per-game settings,
   and adds the host's certificate to RPCS3's emulated PS3 certificates (the originals are kept). It doesn't touch
   your system, your browser or your other games' settings. Exactly what it changes is listed in
   [TECHNICAL.md](TECHNICAL.md#building-and-development).
@@ -151,7 +155,7 @@ Fair question for any download from a stranger on the internet. What this projec
 
 ## Technical details
 
-How it works, the patches, building the app, and notes for reviving other games: [TECHNICAL.md](TECHNICAL.md).
+How it works, the patches, building the launcher, and notes for reviving other games: [TECHNICAL.md](TECHNICAL.md).
 Contributions and test reports are welcome: open an issue.
 
 **Fun fact:** getting from the "ONLINE DISABLED" popup to a full 1v1 game took about 8 hours and roughly $60 in Claude

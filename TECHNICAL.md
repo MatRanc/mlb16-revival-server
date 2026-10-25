@@ -9,19 +9,30 @@ or do the same for another game. The deep dives are in [`docs/`](docs/).
 | [docs/code-map.md](docs/code-map.md) | where things are in the game's code (addresses, our names, what's patched) |
 | [docs/endpoints.md](docs/endpoints.md) | all 347 API services the game knows, and which ones the server answers |
 | [docs/research.md](docs/research.md) | how to get the game's own config files from your copy and dig further |
-| [docs/setup-host.md](docs/setup-host.md), [setup-player.md](docs/setup-player.md) | the manual setup, without the app |
+| [docs/setup-host.md](docs/setup-host.md), [setup-player.md](docs/setup-player.md) | the manual setup, without the launcher |
 
 ## Graphics settings
 
-The app applies these when "Recommended graphics settings" is ticked, for MLB The Show 16 only (in the game's
+The launcher applies these when "Recommended graphics settings" is ticked, for MLB The Show 16 only (in the game's
 custom config). By hand: right-click the game in RPCS3 → **Create Custom Configuration**, then set:
-- **GPU:** Write Color Buffers, Strict Rendering Mode, ZCULL Accuracy *Precise*, Shader Quality *High*
-- **Advanced:** Read Color Buffers, Read Depth Buffer, Write Depth Buffer, Disable Vertex Cache
-- **CPU:** leave SPU XFloat Accuracy on *Approximate XFloat* and SPU Block Size on *Safe* (the defaults)
+- **GPU:** Write Color Buffers on, Strict Rendering Mode **off**, Default Resolution *720p*, ZCULL Accuracy *Precise*,
+  Shader Quality *High*. For a sharper picture, Resolution Scale *150%* (1080p); it's only available with Strict
+  Rendering Mode off.
+- **Advanced:** Read Color Buffers, Read Depth Buffer, Write Depth Buffer, Disable Vertex Cache on; **Accurate SPU
+  Reservations on** (the default)
+- **CPU:** SPU Block Size **Safe** and SPU XFloat Accuracy *Approximate XFloat* (the defaults)
 
-Without them, parts of the crowd go dark and the picture-in-picture windows (like the runner's lead-off) have a black
-background. The crowd itself needs the **crowd fix patch** from
-[mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), which the app also installs.
+Write Color Buffers is the one that fixes the dark crowd and the black background in picture-in-picture windows (like
+the runner's lead-off). Strict Rendering Mode isn't needed for it and costs performance, so it's off.
+
+The CPU settings matter for stability: two online matches froze on a player who had SPU Block Size *Mega* and
+Accurate SPU Reservations off (one silent hang, and one RPCS3 error inside `cellSpursRemoveWorkload`). The launcher
+always sets both back to the defaults for this game, even with "Recommended graphics settings" unticked. Default
+Resolution *1440×1080* is not 1440p: it's a stretched PS3 output mode, and the game still renders at 720p. The crowd itself needs the **crowd fix patch** from
+[mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), which the launcher also installs.
+
+The screenshots below were taken before Strict Rendering Mode was dropped from the recommendation; everything else
+in them still applies.
 
 <table>
   <tr>
@@ -82,12 +93,14 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
   that long to appear. As far as we can tell, the game only downloads the list when you join and on that timer.
 - Some player-list columns may show blank or zero: the column names are guesses, since the UI scripts are compiled.
 - Endpoints the server doesn't know get an empty "OK" reply. That's enough for everything Game Rooms needs so far.
-- The recommended graphics settings slow the game down on an M1 Mac (about 35 FPS in a match) but not on an RTX 3060 Ti.
-  Which setting costs the most, and which ones the dark crowd fix really needs, hasn't been narrowed down yet.
+- With the first recommended settings (Strict Rendering Mode on), an M1 Mac ran about 35 FPS in a match. Strict
+  Rendering is now off, which should help; not measured on the Mac yet.
+- RPCS3 itself can still freeze mid-game (seen: a graphics error on Linux, an SPU-related hang and error on Windows
+  with non-default SPU settings). When one player's game freezes, the other's waits for it and freezes too.
 
 ## Building and development
 
-Run the app from source (this is also the way on Linux for now):
+Run the launcher from source (this is also the way on Linux for now):
 ```sh
 git clone https://github.com/MatRanc/mlb16-revival-server && cd mlb16-revival-server/app
 python3 -m venv .venv
@@ -104,10 +117,10 @@ tkinter may be a separate package: `sudo dnf install python3-tkinter` (Fedora), 
   Actions tab.
 - **The server alone:** `python mlb16_online.py --server`, or `server/server.py` directly (it then keeps its
   certificates and logs next to itself; see [docs/setup-host.md](docs/setup-host.md)).
-- **Without the app:** the manual setup is in [docs/setup-host.md](docs/setup-host.md) and
+- **Without the launcher:** the manual setup is in [docs/setup-host.md](docs/setup-host.md) and
   [docs/setup-player.md](docs/setup-player.md).
 
-What the app changes in RPCS3: `patches/BCUS01089_patch.yml` (its own file), the patches' entries in
+What the launcher changes in RPCS3: `patches/BCUS01089_patch.yml` (its own file), the patches' entries in
 `patch_config.yml`, the game's custom config (`custom_configs/config_BCUS01089.yml`: network and graphics), and the
 PS3 root certificates in `dev_flash/data/cert` (each one becomes original + the host's CA; the originals are kept in
 `cert.orig`). Its own files (settings, certificates, logs) live in `%APPDATA%\mlb16-online`,
@@ -117,12 +130,12 @@ PS3 root certificates in `dev_flash/data/cert` (each one becomes original + the 
 
 | | |
 |---|---|
-| `app/` | the MLB16 Online app: RPCS3 setup, server start/stop, invite files (`test_setup_logic.py` tests it) |
+| `app/` | the MLB16 Online Launcher: RPCS3 setup, server start/stop, invite files (`test_setup_logic.py` tests it) |
 | `server/server.py` | the server: game API, FLS, logging |
 | `server/make_certs.sh` | makes your own root CA and server certificate |
 | `server/certswap.sh`, `certswap.ps1` | adds the host's CA to RPCS3's certificates, keeping the originals (Linux/macOS, Windows) |
 | `patches/MLB16_online.yml` | the five RPCS3 patches |
-| `patches/MLB16_crowd_fix.yml` | the crowd fix from [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), installed by the app |
+| `patches/MLB16_crowd_fix.yml` | the crowd fix from [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), installed by the launcher |
 | `tools/extract_gamedata.py` | extracts `servers_prod.xml` / `services.xml` from your installed update |
 
 Contributions and test reports are welcome. [AGENTS.md](AGENTS.md) has the ground rules: most importantly, never commit

@@ -12,12 +12,19 @@ TELEMETRY_HOST = 'mlb16.api.wwsga.me'
 APP_ID = 'mlb16-online'
 
 # Per-game settings. Graphics are the tested ones from the README; Net points the game at the server.
+# Write Color Buffers is what fixes the dark crowd and black PiP boxes. Strict Rendering Mode isn't needed for it, costs
+# performance (Macs), and blocks resolution scaling, so it's turned off. The game renders at 720p; sharper = scale.
 GRAPHICS = {
     'Write Color Buffers': 'true', 'Read Color Buffers': 'true',
     'Write Depth Buffer': 'true', 'Read Depth Buffer': 'true',
-    'Strict Rendering Mode': 'true', 'Disable Vertex Cache': 'true',
+    'Strict Rendering Mode': 'false', 'Disable Vertex Cache': 'true',
     'Shader Precision': 'High', 'Accurate ZCULL stats': 'true', 'Relaxed ZCULL Sync': 'false',
+    'Resolution': '1280x720',
 }
+# Always set: two matches froze with SPU Block Size "Mega" and Accurate SPU Reservations off (a hang, and an RPCS3
+# error inside cellSpursRemoveWorkload). These are RPCS3's defaults.
+STABILITY = {'SPU Block Size': 'Safe', 'Accurate SPU Reservations': 'true'}
+SCALES = {'720p': '100', '1080p': '150'}   # Resolution Scale: 1280x720 x 150% = 1920x1080
 
 
 def bundle_dir():
@@ -194,7 +201,7 @@ def patches_status(r, crowd_fix=True):
 
 # ---------------------------------------------------------------- per-game config
 
-def install_game_config(r, server_ip, graphics=True):
+def install_game_config(r, server_ip, graphics=True, picture='720p'):
     """Merges our settings into RPCS3's custom config for this game (created if missing). RPCS3 applies it on top
     of the global config, so only these keys change, and only for MLB The Show 16."""
     cfg = load_yaml(r.custom_config)
@@ -203,8 +210,11 @@ def install_game_config(r, server_ip, graphics=True):
     net['PSN status'] = 'RPCN'
     net['UPNP Enabled'] = 'true'
     net['IP swap list'] = f'{GAME_HOST}={server_ip}&&{TELEMETRY_HOST}={server_ip}'
+    cfg.setdefault('Core', {}).update(STABILITY)
+    video = cfg.setdefault('Video', {})
     if graphics:
-        cfg.setdefault('Video', {}).update(GRAPHICS)
+        video.update(GRAPHICS)
+    video['Resolution Scale'] = SCALES[picture]
     write_text(r.custom_config, dump_yaml(cfg))
 
 

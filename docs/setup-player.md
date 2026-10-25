@@ -1,6 +1,6 @@
 # Player setup
 
-> **Easier:** the [MLB16 Online app](../README.md#setup) does all of this in one click. This page is the manual way.
+> **Easier:** the [MLB16 Online Launcher](../README.md#setup) does all of this in one click. This page is the manual way.
 
 What each player does once, including the host.
 

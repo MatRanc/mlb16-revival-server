@@ -1,11 +1,11 @@
 # Host setup: running the server
 
-> **Easier:** the [MLB16 Online app](../README.md#setup) does all of this in one click. This page is the manual way.
+> **Easier:** the [MLB16 Online Launcher](../README.md#setup) does all of this in one click. This page is the manual way.
 
 One person runs the server, usually on the same PC they play on. Everyone else connects to it, over the same home
 network or over Tailscale.
 
-Tested as a host on Fedora 44 and Windows 11 (by hand and with the app), and on macOS with the app.
+Tested as a host on Fedora 44 and Windows 11 (by hand and with the launcher), and on macOS with the launcher.
 
 ## 1. Get the server running
 
