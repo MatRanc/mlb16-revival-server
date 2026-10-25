@@ -21,3 +21,14 @@ PPU-395faa2b9c12c400d03343cad62ce7aad8ec985b:
     Patch:
       - [ be32, 0x0023166c, 0x38600000 ]  # stdu r1,-0x260(r1) -> li r3, 0   (0 = update successful)
       - [ be32, 0x00231670, 0x4e800020 ]  # mflr r0            -> blr
+  "Allow game room challenges (online)":
+    Games:
+      "MLB The Show 16":
+        BCUS01089: [ 01.10 ]
+    Author: "mister"
+    Notes: "The 'challenges can be accepted' flag is never set after a fresh login without Sony's servers, so the Challenge option never appears and incoming challenges are refused. This treats the flag as set in the game room player menu and on accept, and skips the opponent-status check."
+    Patch Version: 0.1
+    Patch:
+      - [ be32, 0x00255c68, 0x38600001 ]  # player menu: lbz r3,0x300(r3) -> li r3,1 (challenges allowed)
+      - [ be32, 0x00255ccc, 0x60000000 ]  # player menu: beq cr1 (opponent status not 0/1) -> nop
+      - [ be32, 0x001cacc4, 0x38600001 ]  # accept challenge: lbz r3,0x300(r3) -> li r3,1

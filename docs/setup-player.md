@@ -20,9 +20,13 @@ Configuration → Network:
 - IP/Hosts switches: `production.mlb16.online.scea.com=<host IP>`
 
 ## 3. Patches
-Manage → Game Patches → drag [`patches/MLB16_online.yml`](../patches/MLB16_online.yml) onto the window, then tick both:
+Manage → Game Patches → drag [`patches/MLB16_online.yml`](../patches/MLB16_online.yml) onto the window, then tick all three:
 - **Re-enable online menus.** Update 1.10 replaced the online entry point with an "ONLINE DISABLED" popup.
 - **Skip live roster download.** Sony's roster files are gone. Everyone keeps the built-in roster, so rosters always match.
+- **Allow game room challenges.** The game only enables challenges after a server-driven step we don't replicate yet, so the Challenge option would never appear.
+
+If drag and drop doesn't work (it may not on macOS), copy the file into RPCS3's `patches/` folder as `imported_patch.yml`.
+To tick patches without the checkboxes, add them to RPCS3's `patch_config.yml`.
 
 Also recommended: the crowd fix from [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes).
 
