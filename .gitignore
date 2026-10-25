@@ -1,0 +1,16 @@
+# secrets and per-host state
+server/certs/
+server/requests*.jsonl
+server/player_ids.json
+server/.venv/
+__pycache__/
+# never commit game files or Sony data
+gamedata/
+*.elf
+*.BIN
+*.WAD
+*.HDR
+*.iso
+*.pkg
+*.rdc
+*.rrc*

@@ -1,0 +1,23 @@
+Version: 1.2
+
+PPU-395faa2b9c12c400d03343cad62ce7aad8ec985b:
+  "Re-enable online menus (experimental)":
+    Games:
+      "MLB The Show 16":
+        BCUS01089: [ 01.10 ]
+    Author: "mister"
+    Notes: "Update 1.10 replaced the menu script command TopLevel_VerifyAdvOnlineBranch with one that only shows 'ONLINE DISABLED ... no longer available' and returns 0. This makes it return 1 (continue) with no popup. Needs a private server and RPCN to get anywhere."
+    Patch Version: 0.1
+    Patch:
+      - [ be32, 0x000f0dd4, 0x38600001 ]  # stdu r1,-0xa0(r1) -> li r3, 1
+      - [ be32, 0x000f0dd8, 0x4e800020 ]  # mflr r0           -> blr
+  "Skip live roster download (online)":
+    Games:
+      "MLB The Show 16":
+        BCUS01089: [ 01.10 ]
+    Author: "mister"
+    Notes: "Sony's live roster server is gone. Makes the live roster update step (CLiveRosterEngine, 0x23166c) report success right away so everyone keeps the built-in roster. Both players need this patch, or online games will see mismatched rosters."
+    Patch Version: 0.1
+    Patch:
+      - [ be32, 0x0023166c, 0x38600000 ]  # stdu r1,-0x260(r1) -> li r3, 0   (0 = update successful)
+      - [ be32, 0x00231670, 0x4e800020 ]  # mflr r0            -> blr
