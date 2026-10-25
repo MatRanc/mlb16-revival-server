@@ -90,6 +90,16 @@ are gone, so the "Skip live roster download" patch reports success instead, and 
   - In a game room: `CHATTEXT_<a>_<room>` for chat, as `<ChatText>message</ChatText>` sent to `target="zone"`, and `CHATOOB_<a>_<room>`, an out-of-band layer used for challenges.
 - **Relaying:** challenge and chat payloads go client to client. The server forwards `target="plyr"` messages to that player and `target="zone"` messages to everyone else registered on the same layer, stamping `sender=<username> senderID=<id>` (the client shows `sender` as the chat name). It doesn't need to understand the payloads.
 
+### Challenges (game rooms)
+- A challenge is a client-to-client FLS message on layer `MLBAM`, `target="plyr" targetID=<opponent>`, carrying
+  `<BinMsg>` (base64). The binary payload is a `CBinaryApplicationMessenger` frame: `u32 protocol (1)`, `u32 total size`,
+  `char[32] sender username`, then the body. A 280-byte challenge holds both player IDs and the match settings.
+  A 44-byte message follows when it's cancelled or times out (about 80 s). The server just relays these.
+- The receiver gets a notification (bottom-left plus a controller rumble). The challenge is accepted from the
+  **Quick Menu** (SELECT), which calls `POST players/batch_lookup.xml` (`usernames=a,b,…`, the pending challengers).
+  **The reply must contain a `<players>` element, or the game freezes.**
+- Clients sometimes enter the only room as id 0 (`CHATTEXT_0_0`) instead of 1. The server treats both as one room.
+
 ## Not done yet
 - The challenge handshake and the start of a game (`mlb_game.create` / `mlb_game.start`).
 - The peer-to-peer match itself, which runs over NP Signaling through RPCN.

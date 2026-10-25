@@ -164,7 +164,17 @@ def lobby_show(req):
               ' min_skill="0" max_skill="100"/>')
 
 
+def batch_lookup(req):
+    # Quick Menu / challenge list: usernames= is a comma list of pending challengers. The client waits for a
+    # <players> element and freezes without one.
+    names = [n for n in req['form'].get('usernames', '').split(',') if n]
+    rows = ''.join(player_row(PLAYERS[n]).replace('<lobby_channel_player ', '<player ', 1)
+                   for n in names if n in PLAYERS)
+    return ok(f'<players>{rows}</players>')
+
+
 ROUTES = {'/mlb_logins/login.xml': login,
+          '/players/batch_lookup.xml': batch_lookup,
           '/servers/select.xml': server_select,
           '/lobby_channels/list_with_my_league_rooms.xml': lobby_list,
           '/lobby_channels/show.xml': lobby_show,
@@ -282,6 +292,11 @@ class FlsConn:
         return self.player.name if self.player else self.addr
 
 
+def room_layer(layer):
+    # shortcut: clients sometimes enter the only room as id 0 (CHATTEXT_0_0) instead of 1; treat both as room 1
+    return re.sub(r'^(CHAT[A-Z]+_\d+)_0$', r'\1_1', layer or '')
+
+
 def relay(src, xml, attrs):
     """Forward a player-to-player or zone message, stamped with the sender."""
     # the client shows `sender` as the chat name, so it carries the username (senderID is the player id)
@@ -292,7 +307,8 @@ def relay(src, xml, attrs):
             dst = BY_ID.get(int(attrs.get('targetID', 0)))
             targets = [dst] if dst and dst.fls else []
         else:   # zone: everyone else registered on the same layer
-            targets = [p for p in BY_ID.values() if p.fls and p is not src.player and attrs.get('layer') in p.fls.layers]
+            targets = [p for p in BY_ID.values()
+                       if p.fls and p is not src.player and room_layer(attrs.get('layer')) in p.fls.layers]
     for p in targets:
         try:
             p.fls.send_xml(stamped)
@@ -335,9 +351,9 @@ def fls_client(sock, addr):
                 c.send(f'<Hello{m.group(3).rstrip("/")}/>')
                 threading.Thread(target=keepalive, daemon=True).start()
             elif kind == 'PluginRegister':
-                c.layers.add(body.get('Layer'))
+                c.layers.add(room_layer(body.get('Layer')))
             elif kind == 'PluginUnregister':
-                c.layers.discard(body.get('Layer'))
+                c.layers.discard(room_layer(body.get('Layer')))
     except (ConnectionError, OSError, ValueError) as e:
         log(event='fls_closed', src=c.who(), error=str(e))
     finally:
