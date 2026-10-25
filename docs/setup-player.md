@@ -21,14 +21,19 @@ Configuration → Network:
 - UPnP: **on** (helps the match connect when you're not on the host's network)
 
 ## 3. Patches
-Manage → Game Patches → drag [`patches/MLB16_online.yml`](../patches/MLB16_online.yml) onto the window, then tick all four:
+Put [`patches/MLB16_online.yml`](../patches/MLB16_online.yml) in RPCS3's `patches` folder, renamed to
+`imported_patch.yml`:
+- Windows: `<RPCS3 folder>\patches\`
+- Linux: `~/.config/rpcs3/patches/`
+- macOS: `~/Library/Application Support/rpcs3/patches/`
+
+If you already have an `imported_patch.yml` there, paste this file's contents at the end of it instead, without its
+first line (`Version: 1.2`). Then open RPCS3 → **Manage → Game Patches**, tick all five under MLB The Show 16, and Save:
 - **Re-enable online menus.** Update 1.10 replaced the online entry point with an "ONLINE DISABLED" popup.
 - **Skip live roster download.** Sony's roster files are gone. Everyone keeps the built-in roster, so rosters always match.
 - **Allow game room challenges.** The game only enables challenges after a server-driven step we don't replicate yet, so the Challenge option would never appear.
 - **Fix NP ID lookup hang.** RPCS3 never finishes the game's opponent ID lookup (`sceNpLookupNpIdAsync`), so both players would hang on "Challenge accepted, waiting for a response".
-
-If drag and drop doesn't work (it may not on macOS), copy the file into RPCS3's `patches/` folder as `imported_patch.yml`.
-To tick patches without the checkboxes, add them to RPCS3's `patch_config.yml`.
+- **Faster game room player list.** The room refreshes its player list every 8 s instead of every 30 s.
 
 Also recommended: the crowd fix from [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes).
 

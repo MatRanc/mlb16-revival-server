@@ -2,7 +2,7 @@
 
 **Play *MLB The Show 16* online again: 1v1 against a friend, both on RPCS3.**
 
-Sony shut down the game's online service in 2020 with update 1.10. This repo is a small private server plus four RPCS3
+Sony shut down the game's online service in 2020 with update 1.10. This repo is a small private server plus five RPCS3
 game patches that bring back **Game Rooms**: join a room, see each other, chat, send a challenge, and play a full game.
 
 ![The first online game in years: Mets at Tigers, pitching on a Linux PC and batting on an M1 MacBook Air, both on RPCS3](docs/images/first-1v1.jpg)
@@ -78,7 +78,7 @@ background. The crowd itself still needs the **crowd fix patch** from
 
 ## The patches
 
-All four are in [`patches/MLB16_online.yml`](patches/MLB16_online.yml). **Both players need all four.**
+All five are in [`patches/MLB16_online.yml`](patches/MLB16_online.yml). **Both players need all five.**
 
 | Patch | Why |
 |---|---|
@@ -86,6 +86,7 @@ All four are in [`patches/MLB16_online.yml`](patches/MLB16_online.yml). **Both p
 | Skip live roster download | Sony's roster files are gone. Everyone keeps the built-in roster, so rosters always match. |
 | Allow game room challenges | The "challenges allowed" flag is normally set by a step tied to Sony's servers, so the Challenge option never appeared. |
 | Fix NP ID lookup hang | RPCS3 never finishes the game's opponent lookup (`sceNpLookupNpIdAsync`), so both players hung on "Challenge accepted, waiting for a response". |
+| Faster game room player list | The room only re-downloads its player list every 30 s, and nothing tells it when someone joins. This makes it 8 s. |
 
 The last one works around an RPCS3 bug. A fix in RPCS3 itself is on the
 [`fix-np-lookup-npid-async`](https://github.com/MatRanc/rpcs3/tree/fix-np-lookup-npid-async) branch of my fork. Until
@@ -117,8 +118,8 @@ something like it is in an official build, keep the patch on.
 The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
 
 ## Known limits
-- Player lists only refresh every 30 s (a timer in the game), and sometimes not at all until you leave and rejoin the
-  room. The real server probably pushed join/leave notices to the game; this one doesn't yet.
+- The player list is refreshed on a timer (8 s with the patch, 30 s without), so a player who just joined can take
+  that long to appear. As far as we can tell, the game only downloads the list when you join and on that timer.
 - Some player-list columns may show blank or zero: the column names are guesses, since the UI scripts are compiled.
 - Endpoints the server doesn't know get an empty "OK" reply. That's enough for everything Game Rooms needs so far.
 
@@ -129,7 +130,7 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
 | `server/server.py` | the server: game API, FLS, logging |
 | `server/make_certs.sh` | makes your own root CA and server certificate |
 | `server/certswap.sh`, `certswap.ps1` | installs a CA into RPCS3 (Linux/macOS, Windows) and restores the originals |
-| `patches/MLB16_online.yml` | the four RPCS3 patches |
+| `patches/MLB16_online.yml` | the five RPCS3 patches |
 | `docs/setup-host.md`, `setup-player.md` | setup guides |
 | `docs/protocol.md` | hosts, TLS, the XML API, login, rooms, FLS, challenges, the pre-game handshake |
 | `docs/endpoints.md` | all 347 API services the game knows, and which ones the server answers |

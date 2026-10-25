@@ -58,6 +58,10 @@ File offset = virtual address − `0x10000` for the data and text segments of th
 | `0x1d38a0`, `0x1d3a70` | Challenge module `Natpunch`: start (host connects / guest listens), update. |
 | `0x1039e88`… | Challenge module class names and vtables (`CChallengeModule*`). |
 | `0x7a9c74` | NP connection state machine (`olNpHandlerPS3.cpp`): `sceNpLookupNpIdAsync` → poll → `sceNpSignalingCreateCtx` / `ActivateConnection`. **Patched** at `0x7a9e08` / `0x7a9e0c` (skip the poll). |
+| `0x71e304` | FLS message dispatcher (`fls.cpp`). System messages on layer `989fls` (Hello, Message, ZonePlayerJoin, ZonePlayerQuit, BuddyInvite, PlayerKick) go to every system listener at `+0x40`; other layers go to the plugin registered for that layer (`m_mapPlugins`, registered in `0x71d188`). |
+| `0x765c00` / `0x76846c` | ChatText / ChatOob plugin constructors (`CHATTEXT_%d_%d`, `CHATOOB_%d_%d`). ChatOob's only sender is the league draft ("DRAFTED"). |
+| `0x2a49c8` | Game room tick: re-downloads the player list (`lobby_channel_player.list`) every 30.0 s (float at `0x52978`, shared). **Patched** at `0x2a4a28` to load 8.0 from `0xf2fc40`. |
+| `0x1eefb4` / `0x1ef05c` | Room join / quit callbacks. Join triggers one list download (`0xb73a8`); quit sets the current room id to 0, which is why the next join can ask for room 0. |
 | `0xb3588` | Post-game return to the online menus; also sets `obj+0x300`. |
 
 ## Game data

@@ -42,3 +42,12 @@ PPU-395faa2b9c12c400d03343cad62ce7aad8ec985b:
     Patch:
       - [ be32, 0x007a9e08, 0x38600000 ]  # bl sceNpLookupPollAsync -> li r3,0 (lookup finished)
       - [ be32, 0x007a9e0c, 0x60000000 ]  # ld r2,0x28(r1) (TOC restore after the stub) -> nop
+  "Faster game room player list (online)":
+    Games:
+      "MLB The Show 16":
+        BCUS01089: [ 01.10 ]
+    Author: "mister"
+    Notes: "The game room only re-downloads its player list every 30 seconds, and the server cannot push joins to it. This makes it refresh every 8 seconds, so players who join show up sooner."
+    Patch Version: 0.1
+    Patch:
+      - [ be32, 0x002a4a28, 0xc064fc40 ]  # lfs f3,0x0(r30) (30.0 s) -> lfs f3,-0x3c0(r4) (8.0f at 0xf2fc40)
