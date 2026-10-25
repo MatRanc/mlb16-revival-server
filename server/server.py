@@ -173,7 +173,29 @@ def batch_lookup(req):
     return ok(f'<players>{rows}</players>')
 
 
+def player_info(req):
+    # player.info_for_challenge: <player .../> fills the CHALLENGER_PROFILE table; without it the accept screen waits
+    p = BY_ID.get(int(req['query'].get('id') or 0)) or req['player']
+    return ok(player_row(p).replace('<lobby_channel_player ', '<player ', 1) if p else '')
+
+
+GAMES = {}   # frozenset of the two player ids -> game uuid
+
+
+def game_start(req):
+    # mlb_game.start (sent by the challenger): reply <game uuid=.../>, which the client stores as the match id
+    p = req['player']
+    opp = int(req['form'].get('opponent_player_id') or -1)
+    key = frozenset((p.id if p else 0, opp))
+    with STATE:
+        gid = GAMES.setdefault(key, str(uuid.uuid4()))
+    log(event='game_start', player=p.name if p else None, opponent=opp, uuid=gid)
+    return ok(f'<game uuid="{gid}"/>')
+
+
 ROUTES = {'/mlb_logins/login.xml': login,
+          '/players/info2.xml': player_info,
+          '/mlb_games/start.xml': game_start,
           '/players/batch_lookup.xml': batch_lookup,
           '/servers/select.xml': server_select,
           '/lobby_channels/list_with_my_league_rooms.xml': lobby_list,

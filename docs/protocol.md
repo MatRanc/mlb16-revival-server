@@ -98,6 +98,13 @@ are gone, so the "Skip live roster download" patch reports success instead, and 
 - The receiver gets a notification (bottom-left plus a controller rumble). The challenge is accepted from the
   **Quick Menu** (SELECT), which calls `POST players/batch_lookup.xml` (`usernames=a,b,…`, the pending challengers).
   **The reply must contain a `<players>` element, or the game freezes.**
+- After accepting, the challenge goes on:
+  1. The accepter sends a BinMsg of type 2 (accept), then type 6.
+  2. The accepter calls `GET players/info2.xml?id=<opponent>` (`player.info_for_challenge`). The reply must contain
+     `<player …/>`; it fills the CHALLENGER_PROFILE table.
+  3. The challenger calls `POST mlb_games/start.xml` (`game_mode=0&opponent_player_id=<id>`). The reply must be
+     `<game uuid="…"/>`; the client stores the uuid as the match ID.
+  4. The two clients exchange BinMsg protocol 0 messages (`10500` both ways, then `10501`, 108 bytes, from the challenger), relayed by the server.
 - Clients sometimes enter the only room as id 0 (`CHATTEXT_0_0`) instead of 1. The server treats both as one room.
 
 ## Not done yet
