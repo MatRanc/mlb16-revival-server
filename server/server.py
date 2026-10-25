@@ -179,16 +179,12 @@ def player_info(req):
     return ok(player_row(p).replace('<lobby_channel_player ', '<player ', 1) if p else '')
 
 
-GAMES = {}   # frozenset of the two player ids -> game uuid
-
-
 def game_start(req):
-    # mlb_game.start (sent by the challenger): reply <game uuid=.../>, which the client stores as the match id
+    # mlb_game.start (sent by the challenger only): reply <game uuid=.../>, the match id.
+    # The challenger passes it on to the opponent in BinMsg 10501, so each call gets a fresh one.
     p = req['player']
     opp = int(req['form'].get('opponent_player_id') or -1)
-    key = frozenset((p.id if p else 0, opp))
-    with STATE:
-        gid = GAMES.setdefault(key, str(uuid.uuid4()))
+    gid = str(uuid.uuid4())
     log(event='game_start', player=p.name if p else None, opponent=opp, uuid=gid)
     return ok(f'<game uuid="{gid}"/>')
 
