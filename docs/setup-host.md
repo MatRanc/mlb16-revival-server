@@ -3,16 +3,29 @@
 One person runs the server, usually on the same PC they play on. Everyone else connects to it, over the same home
 network or over Tailscale.
 
-Tested on Fedora 44 with Python 3.14. Any OS with Python 3.10+ should work.
+Tested on Fedora 44 with Python 3.14. Windows and macOS should work too (steps below), but haven't been tested as hosts.
 
 ## 1. Get the server running
 
+Linux / macOS:
 ```sh
 git clone <this repo> && cd mlb16-revival-server/server
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 ./make_certs.sh            # once: makes your own root CA (certs/ca.pem) and a server certificate
 .venv/bin/python server.py
 ```
+
+Windows (PowerShell). First install [Python 3](https://www.python.org/downloads/) (tick **Add python.exe to PATH**) and
+[Git for Windows](https://git-scm.com/download/win), which brings the `sh` and `openssl` that `make_certs.sh` needs:
+```powershell
+git clone https://github.com/MatRanc/mlb16-revival-server; cd mlb16-revival-server\server
+py -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+& "C:\Program Files\Git\bin\sh.exe" make_certs.sh     # once
+.venv\Scripts\python server.py
+```
+The first time it runs, Windows Firewall asks whether Python may accept connections. Allow it on both **Private** and
+**Public** networks; the Tailscale network may count as either.
 
 - It listens on **10050** (game API, HTTP), **10051** (game API, HTTPS) and **10070** (FLS).
 - Port **443** (telemetry) is optional. On Linux it needs `sudo sysctl -w net.ipv4.ip_unprivileged_port_start=443`. Without it the server skips 443 and the game works anyway.
@@ -24,7 +37,8 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 Follow [setup-player.md](setup-player.md) on this machine too, with two differences:
 - In IP/Hosts switches, use `127.0.0.1` for the game host. Optionally add the telemetry host as well:
   `production.mlb16.online.scea.com=127.0.0.1&&mlb16.api.wwsga.me=127.0.0.1`
-- Install your own CA with `./certswap.sh install`.
+- Install your own CA: `./certswap.sh install` on Linux/macOS, or on Windows
+  `powershell -ExecutionPolicy Bypass -File certswap.ps1 install C:\RPCS3 certs\ca.pem` (your RPCS3 folder first).
 
 ## 3. Let the other players reach you
 
@@ -37,7 +51,13 @@ Give each player your `certs/ca.pem`.
 ### Over the internet: Tailscale
 [Tailscale](https://tailscale.com) gives your machines a private network with fixed `100.x.y.z` addresses, with no port forwarding.
 
-Host (Fedora shown; see tailscale.com/download for other systems):
+Tailscale is only needed to reach **your server**. The match itself doesn't go through it (see
+[How the match connects](#how-the-match-connects)).
+
+Host on Windows or macOS: install Tailscale from [tailscale.com/download](https://tailscale.com/download), sign in, and
+find your `100.x.y.z` address by clicking the Tailscale tray/menu bar icon.
+
+Host on Linux (Fedora shown):
 ```sh
 sudo dnf install tailscale
 sudo systemctl enable --now tailscaled
@@ -46,7 +66,8 @@ tailscale ip -4              # your 100.x.y.z address; this goes in the players'
 ```
 
 Each friend:
-1. Install Tailscale and sign in with **their own** account.
+1. Install Tailscale ([tailscale.com/download](https://tailscale.com/download); on Windows it's a normal installer that
+   runs in the tray) and sign in with **their own** account.
 2. The host shares the machine with them: in the [admin console](https://login.tailscale.com/admin/machines), open the
    host machine's **⋯ menu → Share…** and send the invite to the friend's email. The friend accepts it, and the host
    then shows up in their Tailscale.
@@ -54,10 +75,21 @@ Each friend:
 3. Check it works: on the friend's machine, `tailscale ping <host 100.x IP>`, or open `http://<host 100.x IP>:10050/x.xml`
    in a browser (it should return a short XML).
 
-Firewall: Tailscale traffic arrives on the `tailscale0` interface. On Fedora it lands in the default zone, which
-already allows 10050/10051/10070. On other systems, allow those TCP ports on `tailscale0`.
+Firewall: on Linux, Tailscale traffic arrives on the `tailscale0` interface. On Fedora it lands in the default zone,
+which already allows 10050/10051/10070. On Windows, the firewall prompt from step 1 covers it.
 
 Then players use `production.mlb16.online.scea.com=<host 100.x IP>` in their hosts switch.
+
+### How the match connects
+The server only handles logins, rooms, chat and challenges. The match itself is a direct connection between the two
+games, which RPCN sets up (NP Signaling):
+- **Same home network:** RPCN gives each game the other's LAN address. Tested, works.
+- **Over the internet:** RPCN gives each game the other's public internet address, and RPCS3 punches a direct UDP
+  connection through both routers. This doesn't use Tailscale. **Not tested yet.**
+
+To give it the best chance, turn on **UPnP** in RPCS3 (Configuration → Network) on both machines. If the match still
+won't connect, one player can forward **UDP port 3658** (RPCS3's peer-to-peer port) on their router to their PC.
+Strict NAT (some mobile hotspots and ISPs that share one public IP between customers) can block it entirely.
 
 ## 4. What the host needs to keep doing
 - Keep `server.py` running while people play.

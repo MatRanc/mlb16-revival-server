@@ -8,6 +8,7 @@ game patches that bring back **Game Rooms**: join a room, see each other, chat, 
 ![The first online game in years: Mets at Tigers, pitching on a Linux PC and batting on an M1 MacBook Air, both on RPCS3](docs/images/first-1v1.jpg)
 
 > **Status: it works!** First online 1v1 game played on October 25, 2026 (Linux PC vs M1 Mac, same home network).
+> Windows vs Windows over the internet is the next goal.
 > It's still early: expect rough edges, and please report what you find.
 
 | | |
@@ -16,7 +17,8 @@ game patches that bring back **Game Rooms**: join a room, see each other, chat, 
 | ✅ | Game Rooms: room list, player list, chat |
 | ✅ | Challenging a player, accepting, and the pre-game handshake |
 | ✅ | Peer-to-peer connection and **playing a 1v1 game** |
-| ❓ | Playing over the internet (Tailscale): set up and documented, not tested yet |
+| ❓ | Playing over the internet: the server through Tailscale, the match through RPCN's direct connection. Documented, not tested yet |
+| ❓ | Windows: the server, scripts and setup are written for it, but no game has been played on Windows yet |
 | ❓ | Reliability: one of the first two attempts dropped before the game started |
 | ❓ | Saving results after a game |
 | ❌ | Other online modes (Diamond Dynasty, Online Rated, Franchise…): out of scope for now |

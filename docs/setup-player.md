@@ -18,6 +18,7 @@ Configuration → Network:
 - Network status: **Connected**
 - PSN status: **RPCN**
 - IP/Hosts switches: `production.mlb16.online.scea.com=<host IP>`
+- UPnP: **on** (helps the match connect when you're not on the host's network)
 
 ## 3. Patches
 Manage → Game Patches → drag [`patches/MLB16_online.yml`](../patches/MLB16_online.yml) onto the window, then tick all four:

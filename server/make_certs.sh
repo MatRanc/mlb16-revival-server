@@ -1,7 +1,8 @@
 #!/bin/sh
 # Our own root CA + a server cert for the game's API host. Pass "sha1" to sign with SHA-1 instead.
 set -e
-cd "$(dirname "$0")/certs"
+export MSYS_NO_PATHCONV=1   # Git Bash on Windows would otherwise turn -subj "/C=..." into a file path
+mkdir -p "$(dirname "$0")/certs" && cd "$(dirname "$0")/certs"
 MD=${1:-sha256}
 openssl req -x509 -newkey rsa:2048 -nodes -keyout ca.key -out ca.pem -days 7300 -$MD \
   -subj "/C=US/O=MLB16 Revival/CN=MLB16 Revival Root CA" \
