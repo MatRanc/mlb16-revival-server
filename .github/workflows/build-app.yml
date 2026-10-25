@@ -16,9 +16,9 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            asset: MLB16-Online-Windows.zip
+            asset: MLB16-Online-Launcher-Windows.zip
           - os: macos-latest
-            asset: MLB16-Online-macOS.zip
+            asset: MLB16-Online-Launcher-macOS.zip
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -32,16 +32,16 @@ jobs:
       - run: pip install -r requirements.txt pyinstaller==6.22.3 pillow  # pillow: turns icon.png into .ico/.icns
       - run: python test_setup_logic.py
       - run: >
-          pyinstaller --noconfirm --clean --onefile --windowed --name MLB16-Online
+          pyinstaller --noconfirm --clean --onefile --windowed --name MLB16-Online-Launcher
           --add-data "../patches/MLB16_online.yml:patches" --add-data "../patches/MLB16_crowd_fix.yml:patches"
           --add-data "../server/server.py:server" --add-data "icon.png:app" --icon icon.png
           --collect-data sv_ttk mlb16_online.py
       - name: Package (Windows)
         if: runner.os == 'Windows'
-        run: cd dist && 7z a "../${{ matrix.asset }}" MLB16-Online.exe
+        run: cd dist && 7z a "../${{ matrix.asset }}" MLB16-Online-Launcher.exe
       - name: Package (macOS)
         if: runner.os == 'macOS'
-        run: cd dist && ditto -c -k --keepParent MLB16-Online.app "../${{ matrix.asset }}"
+        run: cd dist && ditto -c -k --keepParent MLB16-Online-Launcher.app "../${{ matrix.asset }}"
       - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.asset }}

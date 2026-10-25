@@ -26,7 +26,7 @@ Write Color Buffers is the one that fixes the dark crowd and the black backgroun
 the runner's lead-off). Strict Rendering Mode isn't needed for it and costs performance, so it's off.
 
 The CPU settings matter for stability: two online matches froze on a player who had SPU Block Size *Mega* and
-Accurate SPU Reservations off (one silent hang, and one RPCS3 error inside `cellSpursRemoveWorkload`). The launcher
+Accurate SPU Reservations off (with 1440×1080 and 200% scale) (one silent hang, and one RPCS3 error inside `cellSpursRemoveWorkload`). The launcher
 always sets both back to the defaults for this game, even with "Recommended graphics settings" unticked. Default
 Resolution *1440×1080* is not 1440p: it's a stretched PS3 output mode, and the game still renders at 720p. The crowd itself needs the **crowd fix patch** from
 [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), which the launcher also installs.
