@@ -20,7 +20,8 @@ game patches that bring back **Game Rooms**: join a room, see each other, chat, 
 | ❓ | Playing over the internet: the server through Tailscale, the match through RPCN's direct connection. Documented, not tested yet |
 | ✅ | Windows: server and game on Windows 11, playing against a Mac |
 | ✅ | Conceding: the other player accepts, and both games go back to the room |
-| ❓ | Reliability: one early attempt dropped before the game started, and one got stuck on stadium select |
+| ✅ | **MLB16 Online app**: set up RPCS3 and host or join with an invite file, tested on Fedora and macOS |
+| ❓ | Reliability: one early attempt dropped before the game started, one got stuck on stadium select, and RPCS3 once crashed mid-game with a graphics error |
 | ❓ | Saving results after a game |
 | ❌ | Other online modes (Diamond Dynasty, Online Rated, Franchise…): out of scope for now |
 
@@ -38,7 +39,7 @@ Every player needs:
   [UP9000-BCUS01089_00-MLB16THESHOWBDPA-A0110-V0100-PE.pkg](http://b0.ww.np.dl.playstation.net/tppkg/np/BCUS01089/BCUS01089_T10/07a5f28c76691db4/UP9000-BCUS01089_00-MLB16THESHOWBDPA-A0110-V0100-PE.pkg)
 - **A free RPCN account** (RPCS3's stand-in for PSN), created inside RPCS3.
 
-One player also runs the server: any PC with Python 3.10+. It can be the same machine they play on.
+One player also hosts the server, usually on the PC they play on. Running the app needs Python 3.10+ for now.
 
 Tested on:
 - Ryzen 5 2600X, 32 GB DDR4, RTX 3060 Ti: Fedora 44 and Windows 11 (same PC, dual boot)
@@ -49,13 +50,32 @@ isn't supported yet.
 
 ## Setup
 
-1. **The host** follows [docs/setup-host.md](docs/setup-host.md): start the server, make a certificate, and let the
-   other player reach it (same network, or [Tailscale](https://tailscale.com) over the internet).
-2. **Every player, host included,** follows [docs/setup-player.md](docs/setup-player.md): RPCN, network settings,
-   the patches, and the host's certificate. On Windows there's a PowerShell script for the certificate step.
-3. Set the **graphics settings** below, or parts of the stadium and the runner's lead-off window render dark or black.
-4. Boot the game → **Game Rooms** → pick the room. When you both see each other (up to 30 s), select your friend,
-   choose **Challenge**, and they accept from the **Quick Menu** (SELECT).
+The **MLB16 Online app** (`app/`) does the whole setup in one click: the patches, the per-game settings (network,
+graphics) and the certificate. It also runs the server and makes invite files. It only touches MLB The Show 16:
+other games keep their settings and their online features.
+
+```sh
+git clone https://github.com/MatRanc/mlb16-revival-server && cd mlb16-revival-server/app
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt      # Windows: .venv\Scripts\pip install -r requirements.txt
+.venv/bin/python mlb16_online.py               # Windows: .venv\Scripts\python mlb16_online.py
+```
+On Linux, tkinter may be a separate package (`sudo dnf install python3-tkinter`). On macOS with Homebrew's Python:
+`brew install python-tk`.
+
+**The host:**
+1. **Set up RPCS3** tab → "Me, on this computer" → **Set up RPCS3** (with RPCS3 closed).
+2. **Host a game** tab → **Start server**. Allow network access if your firewall asks.
+3. **Save invite file…** and send it to your friend. Pick the Tailscale address if they're not on your home network
+   (see [Tailscale](docs/setup-host.md#over-the-internet-tailscale)).
+
+**Your friend:** **Set up RPCS3** tab → "A friend, who sent me an invite file" → **Open invite…** → **Set up RPCS3**.
+
+**Then both of you:** boot the game → **Online → Game Rooms** → pick the room. Select your friend, choose
+**Challenge**, and they accept from the **Quick Menu** (SELECT).
+
+The manual steps, without the app, are in [docs/setup-host.md](docs/setup-host.md) and
+[docs/setup-player.md](docs/setup-player.md).
 
 ## Graphics settings
 
@@ -132,10 +152,12 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
 
 | | |
 |---|---|
+| `app/` | the MLB16 Online app: RPCS3 setup, server start/stop, invite files (`test_setup_logic.py` tests it) |
 | `server/server.py` | the server: game API, FLS, logging |
 | `server/make_certs.sh` | makes your own root CA and server certificate |
 | `server/certswap.sh`, `certswap.ps1` | adds the host's CA to RPCS3's certificates, keeping the originals (Linux/macOS, Windows) |
 | `patches/MLB16_online.yml` | the five RPCS3 patches |
+| `patches/MLB16_crowd_fix.yml` | the crowd fix from [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), installed by the app |
 | `docs/setup-host.md`, `setup-player.md` | setup guides |
 | `docs/protocol.md` | hosts, TLS, the XML API, login, rooms, FLS, challenges, the pre-game handshake |
 | `docs/endpoints.md` | all 347 API services the game knows, and which ones the server answers |
