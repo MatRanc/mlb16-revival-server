@@ -50,7 +50,6 @@ File offset = virtual address − `0x10000` for the data and text segments of th
 | `0xb9700` | `content_update.latest` (LIVE_ROSTERS) parser. |
 | `0x2893c4` | Game room entry check (`player_skill_level`, `min_skill` / `max_skill`). |
 | `0x2a4c00` | `lobby_channel_player.list` request and reply (refreshes the `playerlist` table). |
-| `0x2a49c8` | Game room list poll: re-requests the player list every 30 s (shared float constant `0x52978`). |
 | `0x255b1c` | Builds the player popup menu. "CHALLENGE EXHIBITION GAME" requires the flag at `obj+0x300`, special modes off, not yourself, not blocked, and opponent status 0/1. **Patched** at `0x255c68` / `0x255ccc`. |
 | `0x1cac94` | Accepting a challenge. Refuses unless `obj+0x300` is set. **Patched** at `0x1cacc4`. |
 | `0xb50b8`, `0xb4cf0`, `0xb4eb0` | Screen-change hook that sets `obj+0x300` ("Challenges CAN be accepted") from a list of allowed screens (`ol_GameRoom` is one) and the game mode. In our setup it ends up 0. |

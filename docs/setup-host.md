@@ -5,7 +5,7 @@
 One person runs the server, usually on the same PC they play on. Everyone else connects to it, over the same home
 network or over Tailscale.
 
-Tested on Fedora 44 with Python 3.14. Windows and macOS should work too (steps below), but haven't been tested as hosts.
+Tested as a host on Fedora 44 and Windows 11 (by hand and with the app), and on macOS with the app.
 
 ## 1. Get the server running
 
@@ -97,7 +97,7 @@ The server only handles logins, rooms, chat and challenges. The match itself is 
 games, which RPCN sets up (NP Signaling):
 - **Same home network:** RPCN gives each game the other's LAN address. Tested, works.
 - **Over the internet:** RPCN gives each game the other's public internet address, and RPCS3 punches a direct UDP
-  connection through both routers. This doesn't use Tailscale. **Not tested yet.**
+  connection through both routers. This doesn't use Tailscale. Tested: home Wi-Fi vs a phone hotspot.
 
 To give it the best chance, turn on **UPnP** in RPCS3 (Configuration → Network) on both machines. If the match still
 won't connect, one player can forward **UDP port 3658** (RPCS3's peer-to-peer port) on their router to their PC.

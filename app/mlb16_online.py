@@ -201,8 +201,21 @@ class App(tk.Tk):
             self.cfg['rpcs3_exe'] = exe
             self.cfg.save()
             cmd = [exe]
+        env = dict(os.environ)
+        if getattr(sys, 'frozen', False):
+            # the bundled app points the library search path at its own temp folder; RPCS3 must not inherit that
+            # (on Windows it then loads our vcruntime140.dll and refuses to start)
+            if sys.platform == 'win32':
+                import ctypes
+                ctypes.windll.kernel32.SetDllDirectoryW(None)
+            for k in ('LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH'):
+                orig = env.pop(k + '_ORIG', None)
+                if orig is None:
+                    env.pop(k, None)
+                else:
+                    env[k] = orig
         try:
-            subprocess.Popen(cmd, cwd=str(Path(cmd[0]).parent) if Path(cmd[0]).is_absolute() else None)
+            subprocess.Popen(cmd, env=env, cwd=str(Path(cmd[0]).parent) if Path(cmd[0]).is_absolute() else None)
         except OSError as e:
             self.cfg.pop('rpcs3_exe', None)   # ask again next time
             self.cfg.save()

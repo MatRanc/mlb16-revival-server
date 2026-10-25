@@ -40,7 +40,7 @@ Every player needs:
   [UP9000-BCUS01089_00-MLB16THESHOWBDPA-A0110-V0100-PE.pkg](http://b0.ww.np.dl.playstation.net/tppkg/np/BCUS01089/BCUS01089_T10/07a5f28c76691db4/UP9000-BCUS01089_00-MLB16THESHOWBDPA-A0110-V0100-PE.pkg)
 - **A free RPCN account** (RPCS3's stand-in for PSN), created inside RPCS3.
 
-One player also hosts the server, usually on the PC they play on. Running the app needs Python 3.10+ for now.
+One player also hosts the server, usually on the PC they play on. The app does that too.
 
 Tested on:
 - Ryzen 5 2600X, 32 GB DDR4, RTX 3060 Ti: Fedora 44 and Windows 11 (same PC, dual boot)
@@ -51,29 +51,34 @@ isn't supported yet.
 
 ## Setup
 
-The **MLB16 Online app** (`app/`) does the whole setup in one click: the patches, the per-game settings (network,
-graphics) and the certificate. It also runs the server and makes invite files. It only touches MLB The Show 16:
-other games keep their settings and their online features.
+Download **MLB16 Online** from the [Releases page](https://github.com/MatRanc/mlb16-revival-server/releases/latest)
+(Windows or macOS) and unzip it. It sets up RPCS3 in one click (the patches, the game's network and graphics
+settings, and the server certificate), runs the server, and makes invite files. It only changes MLB The Show 16:
+your other games keep their settings and their online features.
 
-```sh
-git clone https://github.com/MatRanc/mlb16-revival-server && cd mlb16-revival-server/app
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt      # Windows: .venv\Scripts\pip install -r requirements.txt
-.venv/bin/python mlb16_online.py               # Windows: .venv\Scripts\python mlb16_online.py
-```
-On Linux, tkinter may be a separate package (`sudo dnf install python3-tkinter`). On macOS with Homebrew's Python:
-`brew install python-tk`.
+The app isn't signed, so the first launch needs one extra click:
+- **Windows:** "Windows protected your PC" → **More info** → **Run anyway**.
+- **macOS:** right-click the app → **Open** → **Open**.
+- **Linux:** no download yet. Run it from source (see [Building and development](#building-and-development)).
+
+<table>
+  <tr>
+    <td><img src="docs/images/app-setup.png" alt="The Set up RPCS3 tab: RPCS3 folder, who runs the server, options, Set up and Launch buttons, and a checklist"></td>
+    <td><img src="docs/images/app-host.png" alt="The Host a game tab: Start/Stop server, your addresses, Save invite file, and server activity"></td>
+  </tr>
+</table>
 
 **The host:**
-1. **Set up RPCS3** tab → "Me, on this computer" → **Set up RPCS3** (with RPCS3 closed).
+1. **Set up RPCS3** tab → "Me, on this computer" → **Set up RPCS3**.
 2. **Host a game** tab → **Start server**. Allow network access if your firewall asks.
 3. **Save invite file…** and send it to your friend (Discord, email, anything: it holds your address and your
    public certificate, no secrets). Pick the Tailscale address if they're not on your home network (see below).
 
 **Your friend:** **Set up RPCS3** tab → "A friend, who sent me an invite file" → **Open invite…** → **Set up RPCS3**.
 
-**Then both of you:** boot the game → **Online → Game Rooms** → pick the room. Select your friend, choose
-**Challenge**, and they accept from the **Quick Menu** (SELECT).
+**Then both of you:** **Launch RPCS3** → boot the game → **Online → Game Rooms** → pick the room. Select your friend,
+choose **Challenge**, and they accept from the **Quick Menu** (SELECT). Your computer may ask whether RPCS3 can use
+the network: allow it.
 
 ### Playing over the internet: Tailscale
 
@@ -89,23 +94,42 @@ port forwarding. Tested: host on home Wi-Fi, other player on a phone hotspot.
 3. **The host** opens the **Host a game** tab (Tailscale has to be running), picks the **Tailscale** address,
    saves the invite file and sends it. Your friend opens it in the app and clicks **Set up RPCS3**.
 
-Only the game server goes through Tailscale. Everything else on both computers, like Discord, the browser and the
-match itself, uses the normal internet connection, so there's nothing to split or tune. The match connects directly
-between the two games (RPCN sets that up); turn on UPnP in your router if it won't connect.
+**Does Tailscale slow down Discord or the game?** No. Tailscale only carries traffic sent to the other computer's
+Tailscale address, which here is just the game server (logins, the room list, chat and challenges: very little data).
+Discord, your browser and the match itself keep using your normal internet connection, so there's no split
+tunneling to set up. (The one exception is a Tailscale "exit node", which is off unless you turn it on.)
 
-The manual steps, without the app, are in [docs/setup-host.md](docs/setup-host.md) and
-[docs/setup-player.md](docs/setup-player.md).
+The match connects directly between the two games (RPCN sets that up). If a challenge is accepted but the match
+never starts, make sure UPnP is on in both routers.
+
+## Troubleshooting
+
+- **"ONLINE DISABLED … no longer available":** the patches aren't active, or your game isn't on update v01.10. Run
+  **Set up RPCS3** again with RPCS3 closed.
+- **"The Online features of MLB The Show are disabled":** PSN sign-in failed. Log in to RPCN in RPCS3
+  (Configuration → RPCN).
+- **"Your connection to The Show Online has been lost" right away:** the game can't reach the server. Is the host's
+  server running? Over the internet: is Tailscale on for both of you, and did the friend accept the share? Did the
+  friend run **Set up RPCS3** with the latest invite?
+- **A player is missing from the room:** wait up to 8 s. Still missing: leave the room and join it again.
+- **Stuck on the stadium select screen:** back out and send a new challenge. Seen once, cause unknown.
+- **Dark crowd, or a black box around the runner's lead-off view:** the graphics settings below aren't on. Keep
+  "Recommended graphics settings" ticked in the app and run **Set up RPCS3** again.
+- **Something else:** before restarting anything, save the RPCS3 log (`RPCS3.log`: in the RPCS3 folder on Windows,
+  `~/Library/Caches/rpcs3` on macOS, `~/.cache/rpcs3` on Linux) and the host's server log (`requests.jsonl` in the
+  folder shown at the bottom of the **Host a game** tab), then open an issue.
 
 ## Graphics settings
 
-Right-click the game in RPCS3 → **Create Custom Configuration**, then set:
+**The app applies these for you** when "Recommended graphics settings" is ticked, for MLB The Show 16 only. To set
+them by hand instead: right-click the game in RPCS3 → **Create Custom Configuration**, then set:
 - **GPU:** Write Color Buffers, Strict Rendering Mode, ZCULL Accuracy *Precise*, Shader Quality *High*
 - **Advanced:** Read Color Buffers, Read Depth Buffer, Write Depth Buffer, Disable Vertex Cache
 - **CPU:** leave SPU XFloat Accuracy on *Approximate XFloat* and SPU Block Size on *Safe* (the defaults)
 
 Without them, parts of the crowd go dark and the picture-in-picture windows (like the runner's lead-off) have a black
-background. The crowd itself still needs the **crowd fix patch** from
-[mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), which also explains the rendering bug.
+background. The crowd itself needs the **crowd fix patch** from
+[mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), which the app also installs.
 
 <table>
   <tr>
@@ -132,7 +156,7 @@ All five are in [`patches/MLB16_online.yml`](patches/MLB16_online.yml). **Both p
 | Fix NP ID lookup hang | RPCS3 never finishes the game's opponent lookup (`sceNpLookupNpIdAsync`), so both players hung on "Challenge accepted, waiting for a response". |
 | Faster game room player list | The room only re-downloads its player list every 30 s, and nothing tells it when someone joins. This makes it 8 s. |
 
-The last one works around an RPCS3 bug. A fix in RPCS3 itself is on the
+The NP ID lookup patch works around an RPCS3 bug. A fix in RPCS3 itself is on the
 [`fix-np-lookup-npid-async`](https://github.com/MatRanc/rpcs3/tree/fix-np-lookup-npid-async) branch of my fork. Until
 something like it is in an official build, keep the patch on.
 
@@ -166,6 +190,34 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
   that long to appear. As far as we can tell, the game only downloads the list when you join and on that timer.
 - Some player-list columns may show blank or zero: the column names are guesses, since the UI scripts are compiled.
 - Endpoints the server doesn't know get an empty "OK" reply. That's enough for everything Game Rooms needs so far.
+
+## Building and development
+
+Run the app from source (this is also the way on Linux for now):
+```sh
+git clone https://github.com/MatRanc/mlb16-revival-server && cd mlb16-revival-server/app
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt      # Windows: .venv\Scripts\pip install -r requirements.txt
+.venv/bin/python mlb16_online.py               # Windows: .venv\Scripts\python mlb16_online.py
+```
+tkinter may be a separate package: `sudo dnf install python3-tkinter` (Fedora), `sudo apt install python3-tk`
+(Debian/Ubuntu), `brew install python-tk` (macOS with Homebrew's Python).
+
+- **Tests:** `python test_setup_logic.py` in `app/` runs the setup steps against fake RPCS3 folders (Linux and Windows
+  layouts).
+- **Builds:** [`.github/workflows/build-app.yml`](.github/workflows/build-app.yml) builds the Windows and macOS apps with
+  PyInstaller. It runs on a version tag (`v*`), which attaches both zips to a GitHub Release, or by hand from the
+  Actions tab.
+- **The server alone:** `python mlb16_online.py --server`, or `server/server.py` directly (it then keeps its
+  certificates and logs next to itself; see [docs/setup-host.md](docs/setup-host.md)).
+- **Without the app:** the manual setup is in [docs/setup-host.md](docs/setup-host.md) and
+  [docs/setup-player.md](docs/setup-player.md).
+
+What the app changes in RPCS3: `patches/BCUS01089_patch.yml` (its own file), the patches' entries in
+`patch_config.yml`, the game's custom config (`custom_configs/config_BCUS01089.yml`: network and graphics), and the
+PS3 root certificates in `dev_flash/data/cert` (each one becomes original + the host's CA; the originals are kept in
+`cert.orig`). Its own files (settings, certificates, logs) live in `%APPDATA%\mlb16-online`,
+`~/Library/Application Support/mlb16-online` or `~/.config/mlb16-online`.
 
 ## Repo
 

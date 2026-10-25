@@ -76,7 +76,8 @@ player list, and chat works. Select a player to challenge them.
 The first time, your computer may ask whether RPCS3 (and on the host, Python) may use the network. Allow it, on private
 and public networks on Windows, or the match can't connect.
 
-If a player is missing from the list, wait 30 s; if they still don't show up, leave the room and join it again.
+If a player is missing from the list, wait up to 8 s (30 s without the faster list patch); if they still don't show
+up, leave the room and join it again.
 
 ## Troubleshooting
 - **"ONLINE DISABLED … no longer available":** the re-enable patch isn't ticked, or your game isn't v01.10.
