@@ -43,7 +43,7 @@ Follow [setup-player.md](setup-player.md) on this machine too, with two differen
 ## 3. Let the other players reach you
 
 ### Same home network
-Find your LAN IP (`ip -4 addr` on Linux, System Settings → Network on macOS). Players put that IP in their hosts
+Find your LAN IP (`ip -4 addr` on Linux, System Settings → Network on macOS, `ipconfig` → IPv4 Address on Windows). Players put that IP in their hosts
 switch. Make sure your firewall allows TCP 10050, 10051 and 10070. Fedora Workstation already allows ports 1025–65535.
 
 Give each player your `certs/ca.pem`.
