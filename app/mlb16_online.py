@@ -188,6 +188,9 @@ class App(tk.Tk):
         links.grid(row=15, column=0, columnspan=3, sticky='w', pady=(12, 0))
         link(links, 'Setup guide', REPO + '#setup').pack(side='left')
         link(links, 'Troubleshooting', REPO + '#troubleshooting').pack(side='left', padx=(16, 0))
+        logs = ttk.Label(links, text='Open RPCS3 logs', style='Link.TLabel', cursor='hand2')
+        logs.pack(side='left', padx=(16, 0))
+        logs.bind('<Button-1>', lambda e: self.open_rpcs3_logs())
         return f
 
     def pick_rpcs3(self):
@@ -195,6 +198,13 @@ class App(tk.Tk):
         if d:
             self.rpcs3_dir.set(d)
             self.refresh()
+
+    def open_rpcs3_logs(self):
+        folder = s.Rpcs3(self.rpcs3_dir.get().strip()).logs if self.rpcs3_dir.get().strip() else None
+        if not folder or not folder.is_dir():
+            messagebox.showinfo('RPCS3 logs', 'No RPCS3 log folder found yet. Pick your RPCS3 folder and start RPCS3 once.')
+            return
+        webbrowser.open(folder.as_uri())
 
     def open_invite(self):
         p = filedialog.askopenfilename(title='Invite file', filetypes=[('MLB16 invite', '*.mlb16invite'),

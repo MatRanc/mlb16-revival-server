@@ -27,6 +27,7 @@ for windows in (False, True):
         root = Path(t)
         r = fake_rpcs3(root, windows)
         assert r.problem() is None
+        assert r.logs == root if windows else r.logs.name == 'rpcs3' and r.logs != root
         if windows:
             assert r.patch_config == root / 'config' / 'patch_config.yml' and r.patches == root / 'patches'
 
@@ -78,5 +79,8 @@ for windows in (False, True):
                 raise AssertionError('accepted a bad invite: ' + bad[:40])
             except ValueError:
                 pass
+
+fp = Path.home() / '.var' / 'app' / 'net.rpcs3.RPCS3'
+assert s.Rpcs3(fp / 'config' / 'rpcs3', windows_layout=False).logs == fp / 'cache' / 'rpcs3' or s.sys.platform == 'darwin'
 
 print('setup_logic: all checks passed')

@@ -62,6 +62,15 @@ class Rpcs3:
         self.custom_config = cfg / 'custom_configs' / f'config_{TITLE_ID}.yml'
         self.cert = base / 'dev_flash' / 'data' / 'cert'
         self.cert_backup = base / 'dev_flash' / 'data' / 'cert.orig'
+        # RPCS3.log: next to the configs on Windows, in the user cache folder elsewhere
+        if windows_layout:
+            self.logs = base
+        elif sys.platform == 'darwin':
+            self.logs = Path.home() / 'Library' / 'Caches' / 'rpcs3'
+        elif self.root.parent.name == 'config' and self.root.parent.parent.parent.name == 'app':   # Flatpak
+            self.logs = self.root.parent.parent / 'cache' / 'rpcs3'
+        else:
+            self.logs = Path(os.environ.get('XDG_CACHE_HOME', Path.home() / '.cache')) / 'rpcs3'
 
     @staticmethod
     def default_root():
