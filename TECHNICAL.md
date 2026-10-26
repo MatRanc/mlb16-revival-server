@@ -65,7 +65,7 @@ All five are in [`patches/MLB16_online.yml`](patches/MLB16_online.yml). **Both p
 | Re-enable online menus | Update 1.10 replaced the online menu entry with an "ONLINE DISABLED" popup. |
 | Skip live roster download | Sony's roster files are gone. Everyone keeps the built-in roster, so rosters always match. |
 | Allow game room challenges | The "challenges allowed" flag is normally set by a step tied to Sony's servers, so the Challenge option never appeared. |
-| Fix NP ID lookup hang | RPCS3 never finishes the game's opponent lookup (`sceNpLookupNpIdAsync`), so both players hung on "Challenge accepted, waiting for a response". |
+| Fix NP ID lookup hang | RPCS3 never finishes the game's opponent lookup (`sceNpLookupNpIdAsync`), so both players hung on "Challenge accepted, waiting for a response", and the online menu went blank after a match (the game looks the opponent up again when it ends). |
 | Faster game room player list | The room only re-downloads its player list every 30 s, and nothing tells it when someone joins. This makes it 8 s. |
 
 The NP ID lookup patch works around an RPCS3 bug. A fix in RPCS3 itself is on the

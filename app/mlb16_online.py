@@ -479,6 +479,11 @@ class App(tk.Tk):
         self.server_state.config(text='●  Running', style='Running.TLabel')
         self.write_log('Server starting…')
         self.refresh()
+        if not getattr(self, 'asked_invite', False):   # once per launcher session, so restarts don't nag
+            self.asked_invite = True
+            if messagebox.askyesno('Invite your friend', 'The server is starting. Save an invite file to send your '
+                                   'friend now?\n\nYou can also do it later with "Save invite file…".'):
+                self.save_invite()
 
     def read_server(self, proc):
         for line in proc.stdout:
