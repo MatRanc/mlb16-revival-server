@@ -160,8 +160,9 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
 
 ## Ideas for later
 
-- **Highest level of detail for the players on the field.** The game drops fielders to lower-detail models when
-  they're far from the camera. Forcing its top level of detail would make wide shots sharper, at some CPU cost (each
+- **More detail for the players on the field.** The game drops fielders to lower-detail models when they're far
+  from the camera. Either force its top level of detail, or (cheaper) push the distances where it switches further
+  out. Either would make wide shots sharper, at some CPU cost (each
   character is prepared on the SPUs, which RPCS3 runs on the CPU). Start from the ICE command list built at `0x730c8`
   ([docs/code-map.md](docs/code-map.md), [docs/ice-mesh.md](docs/ice-mesh.md)) and the `*LowLod` shader names.
 - **The intro video stutters** while booting, with RSX hard faults in the Debug overlay. The game plays it with Bink
