@@ -69,6 +69,8 @@ isn't supported yet.
 
 ## Setup
 
+### Get the launcher
+
 Download **MLB16 Online Launcher** from the [Releases page](https://github.com/MatRanc/mlb16-revival-server/releases/latest)
 (Windows or macOS) and unzip it. It sets up RPCS3 in one click (the patches, the game's network and graphics
 settings, and the server certificate), runs the server, and makes invite files. It only changes MLB The Show 16:
@@ -85,7 +87,13 @@ The launcher isn't signed, so the first launch needs one extra click:
     <td><img src="docs/images/app-setup.png" alt="Tab 1, Set up RPCS3: RPCS3 folder, hosting or joining, options, Set up and Launch buttons, and a checklist"></td>
     <td><img src="docs/images/app-host.png" alt="Tab 2, Run the server: Start/Stop server, where your friend is, Save invite file, and server activity"></td>
   </tr>
+  <tr>
+    <td align="center"><em>Tab 1: Set up RPCS3 (everyone)</em></td>
+    <td align="center"><em>Tab 2: Run the server (host only)</em></td>
+  </tr>
 </table>
+
+### Host and join a game
 
 **The host:**
 1. Close RPCS3. **Set up RPCS3** tab → check the RPCS3 folder (on Windows, the folder with `rpcs3.exe`; click
@@ -113,7 +121,8 @@ The first few games can also stutter briefly while graphics get prepared. Both o
 ### Playing over the internet: Tailscale
 
 [Tailscale](https://tailscale.com) (free) connects the two computers so your friend can reach your server, with no
-port forwarding. Tested: host on home Wi-Fi, other player on a phone hotspot.
+port forwarding. Tested on two separate home networks, and with the host on home Wi-Fi and the other player on a
+phone hotspot.
 
 1. **Both of you** install Tailscale ([tailscale.com/download](https://tailscale.com/download)) and sign in. Each of
    you uses your own account. (Two computers of your own can just use the same account and skip step 2.)
@@ -134,30 +143,22 @@ never starts, make sure UPnP is on in both routers.
 
 ## Troubleshooting
 
-- **"ONLINE DISABLED … no longer available":** the patches aren't active, or your game isn't on update v01.10. Run
-  **Set up RPCS3** again with RPCS3 closed.
-- **"The Online features of MLB The Show are disabled":** PSN sign-in failed. Log in to RPCN in RPCS3
-  (Configuration → RPCN).
-- **"Your connection to The Show Online has been lost" right away:** the game can't reach the server. Is the host's
-  server running? Over the internet: is Tailscale on for both of you, and did the friend accept the share? Did the
-  friend run **Set up RPCS3** with the latest invite?
-- **A player is missing from the room:** wait up to 8 s. Still missing: leave the room and join it again.
-- **Stuck on the stadium select screen:** back out and send a new challenge. Seen once, cause unknown.
-- **Dark crowd, or a black box around the runner's lead-off view:** the graphics settings aren't on. Keep
-  "Accurate graphics" ticked in the launcher and run **Set up RPCS3** again.
-- **The game runs slow:** pick **720p** in the launcher and run **Set up RPCS3** again. Still slow: untick
-  "Accurate graphics" too (the crowd may look darker, but the game runs faster). Close-ups (walk-ups, mound
-  visits) running at 15 to 25 FPS are normal on mid-range CPUs: they're limited by the CPU, not by these settings.
-- **Part of the crowd flickers or disappears when the camera moves:** seen once at Comerica Park, not reproduced since.
-  The game builds a new crowd layout every time a game starts, and some layouts seem to trigger it. Quit to the menu and
-  start a new game (no need to restart RPCS3) to get a fresh crowd.
-- **The match freezes for both players:** one player's RPCS3 stopped, and the other game is waiting for it. Close
-  both games and start again. If it keeps happening, run **Set up RPCS3** again (it resets the settings that froze
-  matches in testing), and keep your RPCS3 log: it says what went wrong.
-- **Something else:** before restarting anything, save the RPCS3 log (`RPCS3.log`: **Open RPCS3 logs** in the
-  launcher's setup tab opens its folder; it's in the RPCS3 folder on Windows, `~/Library/Caches/rpcs3` on macOS,
-  `~/.cache/rpcs3` on Linux) and the host's server log (`requests.jsonl` in the
-  folder that **Open logs folder** opens, in the **Run the server** tab), then open an issue.
+| What you see | What to do |
+|---|---|
+| **"ONLINE DISABLED … no longer available"** | The patches aren't active, or your game isn't on update v01.10. Run **Set up RPCS3** again with RPCS3 closed. |
+| **"The Online features of MLB The Show are disabled"** | PSN sign-in failed. Log in to RPCN in RPCS3 (Configuration → RPCN). |
+| **"Your connection to The Show Online has been lost"** right away | The game can't reach the server. Is the host's server running? Over the internet: is Tailscale on for both of you, and did the friend accept the share? Did the friend run **Set up RPCS3** with the latest invite? |
+| **A player is missing from the room** | Wait up to 8 s. Still missing: leave the room and join it again. |
+| **Stuck on the stadium select screen** | Back out and send a new challenge. Seen once, cause unknown. |
+| **Dark crowd, or a black box around the runner's lead-off view** | The graphics settings aren't on. Keep "Accurate graphics" ticked in the launcher and run **Set up RPCS3** again. |
+| **The game runs slow** | Pick **720p** in the launcher and run **Set up RPCS3** again. Still slow: untick "Accurate graphics" too (the crowd may look darker, but the game runs faster). Close-ups (walk-ups, mound visits) at 15 to 25 FPS are normal on mid-range CPUs: they're limited by the CPU, not by these settings. |
+| **Part of the crowd flickers or disappears when the camera moves** | Quit to the menu and start a new game (no need to restart RPCS3) to get a fresh crowd. The game builds a new crowd layout every time a game starts, and some layouts seem to trigger it. Seen once at Comerica Park. |
+| **The match freezes for both players** | One player's RPCS3 stopped, and the other game is waiting for it. Close both games and start again. If it keeps happening, run **Set up RPCS3** again (it resets the settings that froze matches in testing), and keep your RPCS3 log: it says what went wrong. |
+
+**Something else?** Before restarting anything, save the RPCS3 log (`RPCS3.log`: **Open RPCS3 logs** in the
+launcher's setup tab opens its folder; it's in the RPCS3 folder on Windows, `~/Library/Caches/rpcs3` on macOS,
+`~/.cache/rpcs3` on Linux) and the host's server log (`requests.jsonl` in the folder that **Open logs folder** opens,
+in the **Run the server** tab), then open an issue.
 
 ## Safety and security
 
