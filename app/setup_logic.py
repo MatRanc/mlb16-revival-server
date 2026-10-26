@@ -15,10 +15,12 @@ APP_ID = 'mlb16-online'
 # Write Color Buffers is what fixes the dark crowd and black PiP boxes. Strict Rendering Mode isn't needed: the "too
 # bright" night sky it seemed to fix was just dusk ("Night" games start at dusk), and it costs FPS (Macs most) and
 # makes RPCS3 ignore Anisotropic Filter Override.
+# Only Write Color Buffers fixes anything (dark crowd, black PiP). The other buffer options and Disable Vertex Cache
+# are listed to set them back off: they made RPCS3's RSX thread the bottleneck (dugout close-ups 7-11 FPS -> 30-40).
 GRAPHICS = {
-    'Write Color Buffers': 'true', 'Read Color Buffers': 'true',
-    'Write Depth Buffer': 'true', 'Read Depth Buffer': 'true',
-    'Strict Rendering Mode': 'false', 'Disable Vertex Cache': 'true',
+    'Write Color Buffers': 'true', 'Read Color Buffers': 'false',
+    'Write Depth Buffer': 'false', 'Read Depth Buffer': 'false',
+    'Strict Rendering Mode': 'false', 'Disable Vertex Cache': 'false',
     'Shader Precision': 'High',
 }
 GRAPHICS_OFF = {k: 'false' for k in GRAPHICS} | {'Shader Precision': 'High'}   # RPCS3's defaults, when unticked

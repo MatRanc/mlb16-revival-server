@@ -22,13 +22,19 @@ set:
   (the launcher's 1080p) Default Resolution *1080p*, Resolution Scale *150%* and Anisotropic Filter *8x*. The
   launcher's Sharpness slider sets Resolution Scale (100 to 500%); 800% froze the game on an RTX 3060 Ti, likely out
   of video memory.
-- **Advanced:** Read Color Buffers, Read Depth Buffer, Write Depth Buffer, Disable Vertex Cache on; **Accurate SPU
-  Reservations on** (the default)
+- **Advanced:** Read Color Buffers, Read Depth Buffer, Write Depth Buffer and Disable Vertex Cache **off** (the
+  defaults); **Accurate SPU Reservations on** (the default)
 - **CPU:** SPU Block Size **Safe**, RSX FIFO Accuracy **Atomic** and SPU XFloat Accuracy *Approximate XFloat* (the
   defaults)
 
 Write Color Buffers is the one that fixes the dark crowd and the black background in picture-in-picture windows (like
-the runner's lead-off). Strict Rendering Mode isn't needed: it costs performance (mostly on Macs) and makes RPCS3
+the runner's lead-off). Until v0.4.12 the launcher also turned on the other three buffer options and Disable Vertex
+Cache. They fixed nothing visible, and they made RPCS3's RSX thread (which turns the game's graphics commands into GPU
+work) the bottleneck: in logs it was the busiest thread (85% of a core over a 43-minute match) while total CPU use
+stayed at 40 to 65%. With them off, at 1080p and 300% on a Ryzen 5 2600X: dugout close-ups went from 7 to 11 FPS to
+30 to 40, batter walk-ups felt smoother, and mound visits stayed at about 25. The crowd and the lead-off window still
+look right. The Debug overlay's "Flush requests" stayed about the same, so the gain came from the vertex cache and
+depth copies, not from fewer flushes. Strict Rendering Mode isn't needed: it costs performance (mostly on Macs) and makes RPCS3
 ignore the anisotropic filter. A "too bright" night sky it seemed to fix turned out to be dusk: "Night" games start at
 dusk and get dark as the game goes on.
 
@@ -148,7 +154,19 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
   FPS fielding, 35 batting, 24 on the pitching view, 15 to 20 in close-ups. Tested without much effect: Strict Rendering
   Mode off (+1 to 2 FPS), FIFO accuracy, Max SPURS Threads 4, SPU loop detection. RPCS3's profiler showed the main
   game thread waiting most of the time and the work spread over 25+ SPU programs, with no single hotspot worth
-  patching. A faster CPU is the fix.
+  patching. Part of that was the launcher's own settings: v0.4.12 turned off the buffer options that overloaded
+  RPCS3's RSX thread (see [Graphics settings](#graphics-settings)), and dugout close-ups went from 7 to 11 FPS to 30
+  to 40 on the same PC. Mound visits still run at about 25.
+
+## Ideas for later
+
+- **Highest level of detail for the players on the field.** The game drops fielders to lower-detail models when
+  they're far from the camera. Forcing its top level of detail would make wide shots sharper, at some CPU cost (each
+  character is prepared on the SPUs, which RPCS3 runs on the CPU). Start from the ICE command list built at `0x730c8`
+  ([docs/code-map.md](docs/code-map.md), [docs/ice-mesh.md](docs/ice-mesh.md)) and the `*LowLod` shader names.
+- **The intro video stutters** while booting, with RSX hard faults in the Debug overlay. The game plays it with Bink
+  on the SPUs.
+- **Mound visits** stayed at about 25 FPS after the v0.4.12 settings change, so something else limits them.
 
 ## Building and development
 
