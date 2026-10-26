@@ -231,6 +231,10 @@ class App(tk.Tk):
         return self.cfg['invite_host'], self.cfg['invite_ca'].encode()
 
     def launch_rpcs3(self):
+        if self.mode.get() == 'host' and not self.server_running() and not messagebox.askyesno(
+                'Launch RPCS3', "The server isn't running. Your friend won't be able to connect until you start it "
+                                'in tab 2.\n\nLaunch RPCS3 anyway?'):
+            return
         r = s.Rpcs3(self.rpcs3_dir.get().strip())
         cmd = s.rpcs3_command(r, self.cfg.get('rpcs3_exe'))
         if not cmd:
