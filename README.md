@@ -26,6 +26,17 @@ game patches that bring back **Game Rooms**: join a room, see each other, chat, 
 | ❓ | Saving results after a game |
 | ❌ | Other online modes (Diamond Dynasty, Online Rated, Franchise…): out of scope for now |
 
+### How good it can look
+
+RPCS3 at 1080p and 300% Sharpness, with the launcher's graphics settings and patches (crowd fix, better depth of field,
+face fix):
+
+![Replay at Comerica Park: batter, catcher and umpire in front of the Tigers scoreboard](docs/images/replay-detroit.jpg)
+
+| | |
+|---|---|
+| ![Pitching at Kauffman Stadium: Mets batter, full crowd behind the plate](docs/images/pitching-kc.jpg) | ![Replay at the Rogers Centre with depth of field: pitcher sharp, crowd softly blurred](docs/images/replay-toronto.jpg) |
+
 ## What you need
 
 Every player needs:
