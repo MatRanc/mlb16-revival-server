@@ -40,20 +40,22 @@ face fix):
 
 ## What you need
 
-Every player needs:
-- **MLB16 Online Launcher** (this project's app): see [Setup](#setup).
-- **RPCS3**: [rpcs3.net](https://rpcs3.net/download), on Windows, Linux or macOS.
-- **PS3 system firmware**: download `PS3UPDAT.PUP` from Sony's
-  [PS3 system software page](https://www.playstation.com/en-us/support/hardware/ps3/system-software/), then install it
-  with **File → Install Firmware**.
-- **Your own copy of the game, disc version (BCUS01089)**. Any of these works:
-  - a **decrypted ISO** (recommended): add it with **File → Add ISO Games**;
-  - a raw 1:1 disc image with your disc's key next to it (same name, ending in `.dkey`): also File → Add ISO Games;
-  - a folder dump made on your own PS3 (for example with multiMAN or ManaGunZ): add it with File → Add Games.
-- **The v01.10 update**. Available from Sony's own update servers. Install it with **File → Install Packages/Raps/Edats**:
-  [UP9000-BCUS01089_00-MLB16THESHOWBDPA-A0110-V0100-PE.pkg](http://b0.ww.np.dl.playstation.net/tppkg/np/BCUS01089/BCUS01089_T10/07a5f28c76691db4/UP9000-BCUS01089_00-MLB16THESHOWBDPA-A0110-V0100-PE.pkg)
-- **A free RPCN account** (RPCS3's stand-in for PSN): in RPCS3, **Configuration → RPCN → Create Account**, then
-  confirm it with the token from the email. Each player needs their own, and has to be logged in to it.
+Every player does these once, in this order:
+1. **RPCS3**: [rpcs3.net](https://rpcs3.net/download), on Windows, Linux or macOS.
+2. **PS3 system firmware**: download `PS3UPDAT.PUP` from Sony's
+   [PS3 system software page](https://www.playstation.com/en-us/support/hardware/ps3/system-software/), then install it
+   with **File → Install Firmware**.
+3. **Your own copy of the game, disc version (BCUS01089)**. Any of these works:
+   - a **decrypted ISO** (recommended): add it with **File → Add ISO Games**;
+   - a raw 1:1 disc image with your disc's key next to it (same name, ending in `.dkey`): also File → Add ISO Games;
+   - a folder dump made on your own PS3 (for example with multiMAN or ManaGunZ): add it with File → Add Games.
+4. **The v01.10 update**. Available from Sony's own update servers. Install it with **File → Install Packages/Raps/Edats**:
+   [UP9000-BCUS01089_00-MLB16THESHOWBDPA-A0110-V0100-PE.pkg](http://b0.ww.np.dl.playstation.net/tppkg/np/BCUS01089/BCUS01089_T10/07a5f28c76691db4/UP9000-BCUS01089_00-MLB16THESHOWBDPA-A0110-V0100-PE.pkg)
+   To check: RPCS3's game list should now show version **01.10** for MLB The Show 16.
+5. **A free RPCN account** (RPCS3's stand-in for PSN): in RPCS3, **Configuration → RPCN → Create Account**, then
+   confirm it with the token from the email. Each player needs their own account (two players can't share one), and
+   has to be logged in to it.
+6. **MLB16 Online Launcher** (this project's app): see [Setup](#setup).
 
 One player also hosts the server, usually on the PC they play on. The launcher does that too.
 
@@ -86,20 +88,27 @@ The launcher isn't signed, so the first launch needs one extra click:
 </table>
 
 **The host:**
-1. **Set up RPCS3** tab → "I'm hosting" → **Set up RPCS3**.
-   Under **Resolution**, 720p runs fastest; 1080p is sharper if your graphics card can handle it. **Sharpness**
+1. Close RPCS3. **Set up RPCS3** tab → check the RPCS3 folder (on Windows, the folder with `rpcs3.exe`; click
+   **Browse…** if it's empty) → "I'm hosting" → **Set up RPCS3**.
+   Under **Output**, 720p runs fastest; 1080p is sharper if your graphics card can handle it. **Sharpness**
    renders bigger and shrinks it to fit, for smoother edges: it only costs GPU power (500% ran fine on an RTX 3060 Ti).
 2. **Run the server** tab → **Start server**. Allow network access if your firewall asks. Keep the launcher open while you
    play: closing it stops the server.
 3. **Save invite file…** and send it to your friend (Discord, email, anything: it holds your address and your
    public certificate, no secrets). Under "Where is your friend?", pick Tailscale if they're not on your home network
-   (see below).
+   (see below). If your address changes (a router restart, or switching between home network and Tailscale), save a
+   new invite: your friend opens it and clicks **Set up RPCS3** again.
 
-**Your friend:** **Set up RPCS3** tab → "I'm joining a friend" → **Open invite…** → **Set up RPCS3**.
+**Your friend:** download and unzip the launcher too. Close RPCS3, then **Set up RPCS3** tab → check the RPCS3
+folder → "I'm joining a friend" → **Open invite…** → **Set up RPCS3**. Playing over the internet? Accept the host's
+Tailscale share first ([step 2 below](#playing-over-the-internet-tailscale)).
 
 **Then both of you:** **Launch RPCS3** → boot the game → **Online → Game Rooms** → pick the **Revival Room**. Select your friend,
 choose **Challenge**, and they accept from the **Quick Menu** (SELECT). Your computer may ask whether RPCS3 can use
 the network: allow it.
+
+The first time you boot the game, RPCS3 prepares its code, which can take several minutes (there's a progress bar).
+The first few games can also stutter briefly while graphics get prepared. Both only happen once.
 
 ### Playing over the internet: Tailscale
 
