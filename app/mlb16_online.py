@@ -63,7 +63,9 @@ def friendly(line):
     try:
         d = json.loads(line)
     except ValueError:   # the server cuts long JSON lines short; anything else (errors, tracebacks) is shown
-        return None if line.startswith('{') else line.rstrip()
+        if line.startswith('listening on'):
+            return 'Server ready. Waiting for players…'
+        return None if line.startswith(('{', 'port 443 skipped')) else line.rstrip()   # optional telemetry
     if not isinstance(d, dict):
         return line.rstrip()
     e, t = d.get('event'), d.get('t', '')
@@ -78,6 +80,12 @@ def friendly(line):
                      'Has that player run setup with your invite?'),
     }.get(e)
     return f'{t}  {text}' if text else None
+
+
+def link(parent, text, url):
+    lbl = ttk.Label(parent, text=text, style='Link.TLabel', cursor='hand2')
+    lbl.bind('<Button-1>', lambda e: webbrowser.open(url))
+    return lbl
 
 
 class App(tk.Tk):
@@ -111,15 +119,16 @@ class App(tk.Tk):
         style = ttk.Style(self)
         style.configure('Hint.TLabel', foreground='#9a9a9a')   # fixed colours: "gray" differs between platforms
         style.configure('Link.TLabel', foreground='#4ea1ff')
+        style.configure('Running.TLabel', foreground='#3fb950')
         self.cfg = Settings()
         self.server = None
         self.lines = queue.Queue()
 
         nb = ttk.Notebook(self)
         nb.pack(fill='both', expand=True, padx=12, pady=12)
-        nb.add(self.setup_tab(nb), text='  Set up RPCS3  ')
-        nb.add(self.host_tab(nb), text='  Host a game  ')
-        nb.bind('<<NotebookTabChanged>>', lambda e: self.show_addresses())   # picks up Tailscale started later
+        nb.add(self.setup_tab(nb), text='  1. Set up RPCS3  ')
+        nb.add(self.host_tab(nb), text='  2. Run the server (host only)  ')
+        nb.bind('<<NotebookTabChanged>>', lambda e: (self.show_addresses(), self.refresh()))   # Tailscale started later
         self.protocol('WM_DELETE_WINDOW', self.quit_app)
         self.refresh()
         self.after(200, self.pump)
@@ -138,14 +147,15 @@ class App(tk.Tk):
         hint = ('The folder with rpcs3.exe.' if sys.platform == 'win32' else 'Usually found automatically.')
         ttk.Label(f, text=hint, style='Hint.TLabel').grid(row=2, column=0, columnspan=3, sticky='w')
 
-        ttk.Label(f, text='Who runs the server?', font=('', 11, 'bold')).grid(row=3, column=0, columnspan=3,
+        ttk.Label(f, text='How are you playing?', font=('', 11, 'bold')).grid(row=3, column=0, columnspan=3,
                                                                                 sticky='w', pady=(16, 0))
         self.mode = tk.StringVar(value=self.cfg['mode'])
-        ttk.Radiobutton(f, text='Me, on this computer', variable=self.mode, value='host',
+        ttk.Radiobutton(f, text="I'm hosting (the server runs on this computer)", variable=self.mode, value='host',
                         command=self.refresh).grid(row=4, column=0, columnspan=3, sticky='w', pady=2)
-        ttk.Radiobutton(f, text='A friend, who sent me an invite file', variable=self.mode, value='join',
+        ttk.Radiobutton(f, text="I'm joining a friend (they sent me an invite file)", variable=self.mode, value='join',
                         command=self.refresh).grid(row=5, column=0, columnspan=2, sticky='w', pady=2)
-        ttk.Button(f, text='Open invite…', command=self.open_invite).grid(row=5, column=2, padx=(8, 0))
+        self.invite_btn = ttk.Button(f, text='Open invite…', command=self.open_invite)
+        self.invite_btn.grid(row=5, column=2, padx=(8, 0))
         self.invite_label = ttk.Label(f, style='Hint.TLabel')
         self.invite_label.grid(row=6, column=0, columnspan=3, sticky='w', padx=(28, 0))
 
@@ -160,21 +170,24 @@ class App(tk.Tk):
         pic = ttk.Frame(f)
         pic.grid(row=10, column=0, columnspan=3, sticky='w', pady=(6, 0))
         self.picture = tk.StringVar(value=self.cfg['picture'])
-        ttk.Label(pic, text='Picture:').pack(side='left')
+        ttk.Label(pic, text='Resolution:').pack(side='left')
         ttk.Radiobutton(pic, text='720p (fastest)', variable=self.picture, value='720p').pack(side='left', padx=(10, 0))
         ttk.Radiobutton(pic, text='1080p (sharper, needs a stronger GPU)', variable=self.picture,
                         value='1080p').pack(side='left', padx=(10, 0))
+        ttk.Label(f, text='Changes apply when you click Set up RPCS3.', style='Hint.TLabel').grid(
+            row=11, column=0, columnspan=3, sticky='w', pady=(4, 0))
 
-        ttk.Button(f, text='Set up RPCS3', style='Accent.TButton', command=self.do_setup).grid(
-            row=11, column=0, columnspan=3, sticky='ew', pady=(18, 4), ipady=4)
-        ttk.Button(f, text='Launch RPCS3', command=self.launch_rpcs3).grid(
-            row=12, column=0, columnspan=3, sticky='ew', ipady=2)
+        self.setup_btn = ttk.Button(f, text='Set up RPCS3', command=self.do_setup)
+        self.setup_btn.grid(row=12, column=0, columnspan=3, sticky='ew', pady=(14, 4), ipady=4)
+        self.launch_btn = ttk.Button(f, text='Launch RPCS3', command=self.launch_rpcs3)
+        self.launch_btn.grid(row=13, column=0, columnspan=3, sticky='ew', ipady=4)
 
         self.status = ttk.Label(f, justify='left')
-        self.status.grid(row=13, column=0, columnspan=3, sticky='w', pady=(16, 0))
-        link = ttk.Label(f, text='Setup guide and help', style='Link.TLabel', cursor='hand2')
-        link.grid(row=14, column=0, columnspan=3, sticky='w', pady=(12, 0))
-        link.bind('<Button-1>', lambda e: webbrowser.open(REPO))
+        self.status.grid(row=14, column=0, columnspan=3, sticky='w', pady=(16, 0))
+        links = ttk.Frame(f)
+        links.grid(row=15, column=0, columnspan=3, sticky='w', pady=(12, 0))
+        link(links, 'Setup guide', REPO + '#setup').pack(side='left')
+        link(links, 'Troubleshooting', REPO + '#troubleshooting').pack(side='left', padx=(16, 0))
         return f
 
     def pick_rpcs3(self):
@@ -255,97 +268,128 @@ class App(tk.Tk):
             s.install_game_config(r, ip, graphics=self.graphics.get(), picture=self.picture.get())
             s.install_ca(r, ca)
         except OSError as e:
-            messagebox.showerror('Setup failed', f'{e}\n\nIs RPCS3 closed, and is this the right folder?')
+            messagebox.showerror('Setup failed', "Couldn't change the files in your RPCS3 folder. Make sure RPCS3 is "
+                                 f'closed and the folder is right, then try again.\n\nDetails: {e}')
             return
         self.cfg.update(rpcs3_dir=str(r.root), mode=self.mode.get(), crowd_fix=self.crowd.get(),
                         graphics=self.graphics.get(), picture=self.picture.get())
         self.cfg.save()
         self.refresh()
-        messagebox.showinfo('Done', 'RPCS3 is set up. Start the game, then go to Online → Game Rooms.'
-                            + ('\n\nStart the server in the "Host a game" tab first.' if ip == '127.0.0.1' else ''))
+        messagebox.showinfo('Done', 'RPCS3 is set up.\n\n'
+                            + ('Next: start the server in tab 2, then ' if ip == '127.0.0.1' else 'Next: ')
+                            + 'click Launch RPCS3, boot the game and go to Online → Game Rooms → Revival Room.\n\n'
+                            'To accept a challenge, open the Quick Menu (SELECT).')
+
+    def server_running(self):
+        return bool(self.server and self.server.poll() is None)
 
     def refresh(self):
-        if self.cfg.get('invite_host'):
+        hosting = self.mode.get() == 'host'
+        self.invite_btn.config(state='disabled' if hosting else 'normal')
+        if hosting:
+            self.invite_label.config(text='')
+        elif self.cfg.get('invite_host'):
             self.invite_label.config(text=f'Invite loaded: server at {self.cfg["invite_host"]}')
         else:
             self.invite_label.config(text='No invite loaded')
+        ready = False
         r = s.Rpcs3(self.rpcs3_dir.get().strip()) if self.rpcs3_dir.get().strip() else None
         if not r or r.problem():
-            self.status.config(text='Pick your RPCS3 folder.' if not r else r.problem())
-            return
-        want_ip, want_ca = self.target()
-        ca = s.installed_ca(r)
-        server = s.game_config_server(r)
-        rows = [(s.patches_status(r), 'Patches installed', 'Patches'),
-                (server is not None and server == want_ip, f'Game points at the server ({server})', 'Server address'),
-                (ca is not None and isinstance(want_ca, bytes) and ca == want_ca, 'Server certificate trusted',
-                 'Server certificate')]
-        if not any(ok for ok, _, _ in rows):
-            text = 'Not set up yet: click "Set up RPCS3".'
-        elif all(ok for ok, _, _ in rows):
-            text = '✓  Ready to play\n' + '\n'.join('     ' + done for _, done, _ in rows)
-        else:   # e.g. a new invite was opened: say what the next Set up will change
-            text = 'Click "Set up RPCS3" to finish:\n' + '\n'.join(
-                ('✓  ' + done) if ok else ('○  ' + todo + ': needs setup') for ok, done, todo in rows)
+            text = 'Pick your RPCS3 folder.' if not r else r.problem()
+        else:
+            want_ip, want_ca = self.target()
+            ca = s.installed_ca(r)
+            server = s.game_config_server(r)
+            where = 'your server' if server == '127.0.0.1' else server
+            rows = [(s.patches_status(r), 'Patches installed', 'Patches'),
+                    (server is not None and server == want_ip, f'Connects to {where}', 'Server address'),
+                    (ca is not None and isinstance(want_ca, bytes) and ca == want_ca, 'Server certificate trusted',
+                     'Server certificate')]
+            if not any(ok for ok, _, _ in rows):
+                text = 'Not set up yet: click "Set up RPCS3".'
+            elif all(ok for ok, _, _ in rows):
+                ready = True
+                text = '✓  Ready to play\n' + '\n'.join('     ' + done for _, done, _ in rows)
+                if hosting:   # the most common first-session failure: everything set up but no server
+                    text += ('\n     Server running' if self.server_running() else
+                             '\n○  Server not running: start it in tab 2 before you launch the game')
+            else:   # e.g. a new invite was opened: say what the next Set up will change
+                text = 'Click "Set up RPCS3" to finish:\n' + '\n'.join(
+                    ('✓  ' + done) if ok else ('○  ' + todo + ': needs setup') for ok, done, todo in rows)
         self.status.config(text=text)
+        # point at the next step: Set up until it's done, then Launch
+        self.setup_btn.config(style='TButton' if ready else 'Accent.TButton')
+        self.launch_btn.config(style='Accent.TButton' if ready else 'TButton')
 
     # ------------------------------------------------------------ host tab
 
     def host_tab(self, nb):
         f = ttk.Frame(nb, padding=16)
         f.columnconfigure(0, weight=1)
-        f.rowconfigure(6, weight=1)
+        f.rowconfigure(9, weight=1)
+        h = ('', 11, 'bold')
+        ttk.Label(f, text='1. Start the server', font=h).grid(row=0, column=0, sticky='w')
         bar = ttk.Frame(f)
-        bar.grid(row=0, column=0, sticky='ew')
+        bar.grid(row=1, column=0, sticky='ew', pady=(6, 0))
         self.start_btn = ttk.Button(bar, text='Start server', style='Accent.TButton', command=self.start_server)
         self.start_btn.pack(side='left')
         self.stop_btn = ttk.Button(bar, text='Stop', command=self.stop_server, state='disabled')
         self.stop_btn.pack(side='left', padx=8)
-        self.server_state = ttk.Label(bar, text='Stopped')
+        self.server_state = ttk.Label(bar, text='○  Stopped', style='Hint.TLabel')
         self.server_state.pack(side='left', padx=8)
 
-        ttk.Label(f, text='Your addresses', font=('', 11, 'bold')).grid(row=1, column=0, sticky='w', pady=(16, 0))
-        self.addr = ttk.Label(f, justify='left')
-        self.addr.grid(row=2, column=0, sticky='w')
+        ttk.Label(f, text='2. Send your friend an invite', font=h).grid(row=2, column=0, sticky='w', pady=(18, 0))
+        ttk.Label(f, text='Where is your friend?').grid(row=3, column=0, sticky='w', pady=(6, 0))
+        self.where = tk.StringVar()
+        self.where_btns = ttk.Frame(f)
+        self.where_btns.grid(row=4, column=0, sticky='w')
         inv = ttk.Frame(f)
-        inv.grid(row=3, column=0, sticky='w', pady=(8, 0))
-        self.invite_ip = ttk.Combobox(inv, width=28, state='readonly')
-        self.invite_ip.pack(side='left')
-        ttk.Button(inv, text='Save invite file…', command=self.save_invite).pack(side='left', padx=8)
-        ttk.Label(f, text='Send the invite file to your friend. It holds your address and your server certificate '
-                          '(never your private keys).', style='Hint.TLabel', wraplength=580, justify='left').grid(
-            row=4, column=0, sticky='w', pady=(4, 0))
+        inv.grid(row=5, column=0, sticky='w', pady=(8, 0))
+        ttk.Button(inv, text='Save invite file…', command=self.save_invite).pack(side='left')
+        self.where_hint = ttk.Label(f, style='Hint.TLabel', wraplength=580, justify='left')
+        self.where_hint.grid(row=6, column=0, sticky='w', pady=(4, 0))
+        ttk.Label(f, text='The invite holds your address and your server certificate (never your private keys).',
+                  style='Hint.TLabel', wraplength=580, justify='left').grid(row=7, column=0, sticky='w')
 
-        ttk.Label(f, text='Server activity', font=('', 11, 'bold')).grid(row=5, column=0, sticky='w', pady=(16, 0))
-        self.log = tk.Text(f, height=12, wrap='word', state='disabled', relief='flat', borderwidth=0,
+        ttk.Label(f, text='3. Server activity', font=h).grid(row=8, column=0, sticky='w', pady=(18, 0))
+        self.log = tk.Text(f, height=10, wrap='word', state='disabled', relief='flat', borderwidth=0,
                            background='#0b0b0b', foreground='#d8d8d8', padx=10, pady=8)   # terminal-like
-        self.log.grid(row=6, column=0, sticky='nsew', pady=(4, 0))
-        ttk.Label(f, text=f'If your firewall asks, allow network access. Logs and certificates: {s.data_dir()}',
-                  style='Hint.TLabel', wraplength=580, justify='left').grid(row=7, column=0, sticky='w', pady=(8, 0))
+        self.log.grid(row=9, column=0, sticky='nsew', pady=(4, 0))
+        self.log.tag_configure('placeholder', foreground='#6e6e6e')
+        self.write_log('Nothing yet. Start the server and activity shows up here.', 'placeholder')
+        foot = ttk.Frame(f)
+        foot.grid(row=10, column=0, sticky='ew', pady=(8, 0))
+        ttk.Label(foot, text='If your firewall asks, allow network access.', style='Hint.TLabel').pack(side='left')
+        link(foot, 'Open logs folder', s.data_dir().as_uri()).pack(side='right')
         self.show_addresses()
         return f
 
     def show_addresses(self):
         lan, ts = s.lan_ip(), s.tailscale_ip()
-        rows, choices = [], []
-        if ts:
-            rows.append(f'Tailscale (over the internet): {ts}')
-            choices.append(f'{ts}  (Tailscale)')
-        if lan:
-            rows.append(f'Home network: {lan}')
-            choices.append(f'{lan}  (home network)')
-        if not ts:
-            rows.append('Tailscale not found. Install it to play with friends outside your home network.')
-        self.addr.config(text='\n'.join(rows))
-        self.invite_ip.config(values=choices)
-        if choices:
-            self.invite_ip.current(0)
+        self.ts_ip = ts
+        for w in self.where_btns.winfo_children():
+            w.destroy()
+        choices = [(lan, f'Same home network ({lan})' if lan else 'Same home network (no network found)'),
+                   (ts, f'Somewhere else, over Tailscale ({ts})' if ts else
+                    'Somewhere else: install Tailscale first (see the Setup guide)')]
+        for i, (ip, text) in enumerate(choices):
+            ttk.Radiobutton(self.where_btns, text=text, variable=self.where, value=ip or f'none{i}',   # unselectable
+                            state='normal' if ip else 'disabled',
+                            command=self.where_changed).pack(anchor='w', pady=1)
+        if self.where.get() not in (lan, ts) or not self.where.get():
+            self.where.set(ts or lan or '')
+        self.where_changed()
+
+    def where_changed(self):
+        ts = self.where.get() and self.where.get() == self.ts_ip
+        self.where_hint.config(text='Your friend needs Tailscale too, in your tailnet: invite them, or share this '
+                                    'computer with them from the Tailscale admin console.' if ts else '')
 
     def save_invite(self):
-        if not self.invite_ip.get():
-            messagebox.showerror('Invite', 'No network address found.')
+        ip = self.where.get()
+        if not ip:
+            messagebox.showerror('Invite', 'No network address found. Are you connected to a network?')
             return
-        ip = self.invite_ip.get().split()[0]
         p = filedialog.asksaveasfilename(title='Save invite', defaultextension='.mlb16invite',
                                          initialfile='mlb16-invite.mlb16invite',
                                          filetypes=[('MLB16 invite', '*.mlb16invite')])
@@ -353,6 +397,8 @@ class App(tk.Tk):
             ca = (s.ensure_host_certs() / 'ca.pem').read_bytes()
             Path(p).write_text(s.make_invite(ip, ca), encoding='utf-8')
             self.write_log(f'invite saved for {ip}: {p}')
+            messagebox.showinfo('Invite saved', f'Saved to:\n{p}\n\nSend this file to your friend (Discord, email, '
+                                'anything). They open it in their launcher with "Open invite…", then click Set up RPCS3.')
 
     def start_server(self):
         if self.server and self.server.poll() is None:
@@ -365,8 +411,9 @@ class App(tk.Tk):
         threading.Thread(target=self.read_server, args=(self.server,), daemon=True).start()
         self.start_btn.config(state='disabled')
         self.stop_btn.config(state='normal')
-        self.server_state.config(text='Running')
-        self.write_log('server starting…')
+        self.server_state.config(text='●  Running', style='Running.TLabel')
+        self.write_log('Server starting…')
+        self.refresh()
 
     def read_server(self, proc):
         for line in proc.stdout:
@@ -384,11 +431,13 @@ class App(tk.Tk):
                 line = self.lines.get_nowait()
                 if line is None:
                     code = self.server.wait() if self.server else 0
-                    self.write_log('server stopped' if self.stopping else
-                                   f'server stopped unexpectedly (exit code {code}). Is another server already running?')
+                    self.write_log('Server stopped.' if self.stopping else
+                                   'The server stopped unexpectedly. Usually another copy is already running (another '
+                                   f'launcher window, or server.py): close it and click Start server. (exit code {code})')
                     self.start_btn.config(state='normal')
                     self.stop_btn.config(state='disabled')
-                    self.server_state.config(text='Stopped')
+                    self.server_state.config(text='○  Stopped', style='Hint.TLabel')
+                    self.refresh()
                     continue
                 text = friendly(line)
                 if text:
@@ -397,13 +446,17 @@ class App(tk.Tk):
             pass
         self.after(200, self.pump)
 
-    def write_log(self, text):
+    def write_log(self, text, tag=None):
         self.log.config(state='normal')
-        self.log.insert('end', text + '\n')
+        self.log.delete(*(self.log.tag_ranges('placeholder') or ('end', 'end')))
+        self.log.insert('end', text + '\n', tag)
         self.log.see('end')
         self.log.config(state='disabled')
 
     def quit_app(self):
+        if self.server_running() and not messagebox.askokcancel(
+                'Quit', 'The server is running. Quitting stops it and ends any game in progress.'):
+            return
         self.stop_server()
         self.destroy()
 

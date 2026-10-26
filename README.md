@@ -66,20 +66,21 @@ The launcher isn't signed, so the first launch needs one extra click:
 
 <table>
   <tr>
-    <td><img src="docs/images/app-setup.png" alt="The Set up RPCS3 tab: RPCS3 folder, who runs the server, options, Set up and Launch buttons, and a checklist"></td>
-    <td><img src="docs/images/app-host.png" alt="The Host a game tab: Start/Stop server, your addresses, Save invite file, and server activity"></td>
+    <td><img src="docs/images/app-setup.png" alt="Tab 1, Set up RPCS3: RPCS3 folder, hosting or joining, options, Set up and Launch buttons, and a checklist"></td>
+    <td><img src="docs/images/app-host.png" alt="Tab 2, Run the server: Start/Stop server, where your friend is, Save invite file, and server activity"></td>
   </tr>
 </table>
 
 **The host:**
-1. **Set up RPCS3** tab → "Me, on this computer" → **Set up RPCS3**.
-   Under **Picture**, 720p runs fastest; 1080p is sharper if your graphics card can handle it.
-2. **Host a game** tab → **Start server**. Allow network access if your firewall asks. Keep the launcher open while you
+1. **Set up RPCS3** tab → "I'm hosting" → **Set up RPCS3**.
+   Under **Resolution**, 720p runs fastest; 1080p is sharper if your graphics card can handle it.
+2. **Run the server** tab → **Start server**. Allow network access if your firewall asks. Keep the launcher open while you
    play: closing it stops the server.
 3. **Save invite file…** and send it to your friend (Discord, email, anything: it holds your address and your
-   public certificate, no secrets). Pick the Tailscale address if they're not on your home network (see below).
+   public certificate, no secrets). Under "Where is your friend?", pick Tailscale if they're not on your home network
+   (see below).
 
-**Your friend:** **Set up RPCS3** tab → "A friend, who sent me an invite file" → **Open invite…** → **Set up RPCS3**.
+**Your friend:** **Set up RPCS3** tab → "I'm joining a friend" → **Open invite…** → **Set up RPCS3**.
 
 **Then both of you:** **Launch RPCS3** → boot the game → **Online → Game Rooms** → pick the **Revival Room**. Select your friend,
 choose **Challenge**, and they accept from the **Quick Menu** (SELECT). Your computer may ask whether RPCS3 can use
@@ -96,7 +97,7 @@ port forwarding. Tested: host on home Wi-Fi, other player on a phone hotspot.
    click **⋯** next to your computer → **Share…**, and send the invite link to your friend. They open it and accept.
    Your computer then shows up in their Tailscale. Sharing gives access to that one computer only, not your network,
    and you can stop sharing from the same menu.
-3. **The host** opens the **Host a game** tab (Tailscale has to be running), picks the **Tailscale** address,
+3. **The host** opens the **Run the server** tab (Tailscale has to be running), picks **over Tailscale**,
    saves the invite file and sends it. Your friend opens it in the launcher and clicks **Set up RPCS3**.
 
 **Does Tailscale slow down Discord or the game?** No. Tailscale only carries traffic sent to the other computer's
@@ -127,7 +128,7 @@ never starts, make sure UPnP is on in both routers.
   matches in testing), and keep your RPCS3 log: it says what went wrong.
 - **Something else:** before restarting anything, save the RPCS3 log (`RPCS3.log`: in the RPCS3 folder on Windows,
   `~/Library/Caches/rpcs3` on macOS, `~/.cache/rpcs3` on Linux) and the host's server log (`requests.jsonl` in the
-  folder shown at the bottom of the **Host a game** tab), then open an issue.
+  folder that **Open logs folder** opens, in the **Run the server** tab), then open an issue.
 
 ## Safety and security
 
