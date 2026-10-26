@@ -12,13 +12,13 @@ TELEMETRY_HOST = 'mlb16.api.wwsga.me'
 APP_ID = 'mlb16-online'
 
 # Per-game settings. Graphics are the tested ones from the README; Net points the game at the server.
-# Write Color Buffers is what fixes the dark crowd and black PiP boxes. Strict Rendering Mode fixes Safeco Field at
-# night with overcast skies, which renders far too bright without it. (It only greys out Resolution Scale in RPCS3's
-# settings window; the scale still applies. It does make RPCS3 ignore Anisotropic Filter Override.)
+# Write Color Buffers is what fixes the dark crowd and black PiP boxes. Strict Rendering Mode isn't needed: the "too
+# bright" night sky it seemed to fix was just dusk ("Night" games start at dusk), and it costs FPS (Macs most) and
+# makes RPCS3 ignore Anisotropic Filter Override.
 GRAPHICS = {
     'Write Color Buffers': 'true', 'Read Color Buffers': 'true',
     'Write Depth Buffer': 'true', 'Read Depth Buffer': 'true',
-    'Strict Rendering Mode': 'true', 'Disable Vertex Cache': 'true',
+    'Strict Rendering Mode': 'false', 'Disable Vertex Cache': 'true',
     'Shader Precision': 'High',
 }
 # Always set, back to RPCS3's defaults (from RPCS3's system_config.h): every CPU, SPU and RSX accuracy or timing

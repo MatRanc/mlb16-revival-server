@@ -55,7 +55,7 @@ for windows in (False, True):
         assert c['Core']['PPU Decoder'] == 'Recompiler (LLVM)' and c['Video']['Resolution Scale'] == '100'
         assert all(c['Core'][k] == v for k, v in s.STABILITY.items()) and c['Core']['Libraries Control'] == []
         assert c['Video']['Frame limit'] == 'Auto' and c['Video']['Multithreaded RSX'] == 'false' and c['Log'] == {'sys_net': 'Notice'}
-        assert c['Video']['Strict Rendering Mode'] == 'true' and c['Video']['Resolution'] == '1280x720'
+        assert c['Video']['Strict Rendering Mode'] == 'false' and c['Video']['Resolution'] == '1280x720'
         assert c['Video']['Output Scaling Mode'] == 'Bilinear' and c['Video']['Anisotropic Filter Override'] == '0'
         assert s.game_config_status(r, picture='720p') and not s.game_config_status(r, picture='1080p')
         s.install_game_config(r, '100.1.2.3', graphics=False, picture='1080p')

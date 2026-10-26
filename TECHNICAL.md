@@ -15,19 +15,18 @@ or do the same for another game. The deep dives are in [`docs/`](docs/).
 
 The launcher applies these when "Recommended graphics settings" is ticked, for MLB The Show 16 only (in the game's
 custom config). By hand: right-click the game in RPCS3 → **Create Custom Configuration**, then set:
-- **GPU:** Write Color Buffers on, Strict Rendering Mode **on**, ZCULL Accuracy *Precise*, Shader Quality *High*,
+- **GPU:** Write Color Buffers on, Strict Rendering Mode **off**, ZCULL Accuracy *Precise*, Shader Quality *High*,
   Output Scaling *Bilinear*. Picture: Default Resolution *720p* at Resolution Scale *100%*, or for a sharper picture
-  (the launcher's 1080p) Default Resolution *1080p*, Resolution Scale *150%* and Anisotropic Filter *8x*. RPCS3 greys
-  out the scale and filter boxes when Strict Rendering Mode is on, so set them first; the scale still applies, but the
-  filter is ignored.
+  (the launcher's 1080p) Default Resolution *1080p*, Resolution Scale *150%* and Anisotropic Filter *8x*.
 - **Advanced:** Read Color Buffers, Read Depth Buffer, Write Depth Buffer, Disable Vertex Cache on; **Accurate SPU
   Reservations on** (the default)
 - **CPU:** SPU Block Size **Safe**, RSX FIFO Accuracy **Atomic** and SPU XFloat Accuracy *Approximate XFloat* (the
   defaults)
 
 Write Color Buffers is the one that fixes the dark crowd and the black background in picture-in-picture windows (like
-the runner's lead-off). Strict Rendering Mode fixes Safeco Field at night with overcast skies, which is far too bright
-without it. It costs some performance, mostly on Macs.
+the runner's lead-off). Strict Rendering Mode isn't needed: it costs performance (mostly on Macs) and makes RPCS3
+ignore the anisotropic filter. A "too bright" night sky it seemed to fix turned out to be dusk: "Night" games start at
+dusk and get dark as the game goes on.
 
 The CPU settings matter for stability: two online matches froze on a player who had SPU Block Size *Mega* and
 Accurate SPU Reservations off (with 1440×1080 and 200% scale) (one silent hang, and one RPCS3 error inside `cellSpursRemoveWorkload`).
@@ -99,13 +98,13 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
   that long to appear. As far as we can tell, the game only downloads the list when you join and on that timer.
 - Some player-list columns may show blank or zero: the column names are guesses, since the UI scripts are compiled.
 - Endpoints the server doesn't know get an empty "OK" reply. That's enough for everything Game Rooms needs so far.
-- With Strict Rendering Mode on, an M1 Mac ran about 35 FPS in a match.
+- With Strict Rendering Mode on (no longer set), an M1 Mac ran about 35 FPS in a match. Not measured without it yet.
 - RPCS3 itself can still freeze mid-game. Seen: an SPU-related hang and error on Windows with non-default SPU
   settings, and on Linux a frozen picture or an RSX crash after "FIFO error: possible desync event" errors, which
   went away with RSX FIFO Accuracy *Atomic*. The launcher now resets all of these to RPCS3's defaults. When one player's game freezes, the
   other's waits for it and freezes too.
 - Close-ups (walk-ups, the manager in the dugout, mound visits) are CPU-bound. On a Ryzen 5 2600X at 720p: about 60
-  FPS fielding, 35 batting, 24 on the pitching view, 15 to 20 in close-ups. Tested without effect: Strict Rendering
+  FPS fielding, 35 batting, 24 on the pitching view, 15 to 20 in close-ups. Tested without much effect: Strict Rendering
   Mode off (+1 to 2 FPS), FIFO accuracy, Max SPURS Threads 4, SPU loop detection. RPCS3's profiler showed the main
   game thread waiting most of the time and the work spread over 25+ SPU programs, with no single hotspot worth
   patching. A faster CPU is the fix.
