@@ -21,7 +21,7 @@ game patches that bring back **Game Rooms**: join a room, see each other, chat, 
 | ✅ | Playing over the internet: the server through Tailscale, the match through RPCN's direct connection (home Wi-Fi vs a phone hotspot) |
 | ✅ | Windows: server and game on Windows 11, playing against a Mac |
 | ✅ | Conceding: the other player accepts, and both games go back to the room |
-| ✅ | **Online Home Run Derby**: two players in the same lobby (Linux PC vs M1 Mac) |
+| ✅ | **Online Home Run Derby**: both players join the same random lobby and play (tested Linux PC vs M1 Mac) |
 | ✅ | **MLB16 Online Launcher**: set up RPCS3 and host or join with an invite file, tested on Fedora, Windows 11 and macOS |
 | ❓ | Reliability: one early attempt dropped before the game started, one got stuck on stadium select, and RPCS3 once crashed mid-game with a graphics error |
 | ❓ | Saving results and stats after a game or Derby |
