@@ -71,13 +71,22 @@ The NP ID lookup patch works around an RPCS3 bug. A fix in RPCS3 itself is on th
 something like it is in an official build, keep the patch on.
 
 The launcher also installs two graphics patches. The crowd fix ([`patches/MLB16_crowd_fix.yml`](patches/MLB16_crowd_fix.yml))
-is optional. **Softer depth of field** ([`patches/MLB16_dof_fix.yml`](patches/MLB16_dof_fix.yml)) is always on: the
-game's blur in close-ups and replays averages 4 samples about 3 pixels away, which showed as doubled copies of the
-background and a halo around players (worse with resolution scaling). The offsets are constants in the blur shader,
-stored in the EBOOT in two variants, and the patch quarters them so it reads as a blur at the Sharpness most people
-use (250 to 400%). At 100% the blur is subtle. Set up also turns MSAA off from 200% up: RPCS3 reads the game's
-multisampled image without filtering, which kept the copies crisp, and supersampling smooths edges better anyway. Found in RenderDoc: the blur is
-the last pass of the frame, which also upscales 720p to the output resolution.
+is optional. **Better depth of field** ([`patches/MLB16_dof_fix.yml`](patches/MLB16_dof_fix.yml)) is always on: the
+game's blur in close-ups and replays averaged 4 samples about 3 pixels away (plus the centre), which showed as doubled
+copies of the background and a halo around players, worse with resolution scaling. The blur is an RSX fragment
+program stored in the EBOOT (the 2X MSAA variant the game uses, and an identical 4XR one). The patch rebuilds it: 16
+samples on a spiral out to 2.4 px at 720p plus the centre, each one dropped if it is nearer than the pixel being blurred
+*and* in focus (its own blur amount, from the game's depth formula, is small), so a sharp ball can't bleed into the
+blurred crowd while a blurred player still spreads over what's behind him. The sharp/blur blend factor is also clamped
+to 0..1; the game's reaches 2.4 for far objects and overshoots. The depth part of the original is kept word for word.
+At 167 instruction slots the program no longer fits in the original 52, so the patch writes it to the unused tail of
+the code segment's last 64 KB page (0x10a4400) and points both program headers' size and ucode offset there; the
+game's loader follows the header. [`tools/dof_patch.py`](tools/dof_patch.py) generates the patch from your own EBOOT
+and explains the layout. Some faint stepping can remain on high-contrast edges at high Sharpness: the game blurs the
+full-resolution image in this one pass, with no smaller pre-blurred copy to sample. Earlier versions only shrank the
+original offsets (v0.3.9, weak blur) or used 8 samples without the depth check (halos stayed). Set up also turns MSAA
+off from 200% up: RPCS3 reads the game's multisampled image without filtering, and supersampling smooths edges better
+anyway. Found in RenderDoc: the blur is the last pass of the frame, which also upscales 720p to the output resolution.
 
 ## How it works
 
@@ -158,7 +167,8 @@ PS3 root certificates in `dev_flash/data/cert` (each one becomes original + the 
 | `server/certswap.sh`, `certswap.ps1` | adds the host's CA to RPCS3's certificates, keeping the originals (Linux/macOS, Windows) |
 | `patches/MLB16_online.yml` | the five RPCS3 patches |
 | `patches/MLB16_crowd_fix.yml` | the crowd fix from [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), installed by the launcher |
-| `patches/MLB16_dof_fix.yml` | softer depth of field (no doubled background in close-ups), installed by the launcher |
+| `patches/MLB16_dof_fix.yml` | better depth of field (smooth blur, no doubled background in close-ups), installed by the launcher |
+| `tools/dof_patch.py` | generates `MLB16_dof_fix.yml` from your EBOOT |
 | `tools/extract_gamedata.py` | extracts `servers_prod.xml` / `services.xml` from your installed update |
 
 Contributions and test reports are welcome. [AGENTS.md](AGENTS.md) has the ground rules: most importantly, never commit
