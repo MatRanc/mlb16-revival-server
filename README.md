@@ -137,6 +137,9 @@ never starts, make sure UPnP is on in both routers.
 - **The game runs slow:** pick **720p** in the launcher and run **Set up RPCS3** again. Still slow: untick
   "Recommended graphics settings" too (the crowd may look darker, but the game runs faster). Close-ups (walk-ups, mound
   visits) running at 15 to 25 FPS are normal on mid-range CPUs: they're limited by the CPU, not by these settings.
+- **Part of the crowd flickers or disappears when the camera moves:** seen once at Comerica Park, not reproduced since.
+  The game builds a new crowd layout every time a game starts, and some layouts seem to trigger it. Quit to the menu and
+  start a new game (no need to restart RPCS3) to get a fresh crowd.
 - **The match freezes for both players:** one player's RPCS3 stopped, and the other game is waiting for it. Close
   both games and start again. If it keeps happening, run **Set up RPCS3** again (it resets the settings that froze
   matches in testing), and keep your RPCS3 log: it says what went wrong.

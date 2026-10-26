@@ -131,6 +131,13 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
   settings, and on Linux a frozen picture or an RSX crash after "FIFO error: possible desync event" errors, which
   went away with RSX FIFO Accuracy *Atomic*. The launcher now resets all of these to RPCS3's defaults. When one player's game freezes, the
   other's waits for it and freezes too.
+- Crowd flicker: once, at Comerica Park, about half the crowd flickered as the camera moved. The game builds the crowd
+  when a game starts (`PS3Crowd_BuildVertexBuffer` in the crowd fix write-up), so every game gets a new layout, and the
+  next few games had no flicker. It's probably what's left of RPCS3's draw-clause handling, which the crowd fix works
+  around (see [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), "what's left"). To check a
+  layout without waiting for it, take one RenderDoc capture of a wide shot and run that repo's `tools/rd_crowd_scan.py`
+  on it: it reports crowd batches reading bad data (two recent captures: about 5,100 fans, none bad). Workaround: start
+  a new game.
 - Close-ups (walk-ups, the manager in the dugout, mound visits) are CPU-bound. On a Ryzen 5 2600X at 720p: about 60
   FPS fielding, 35 batting, 24 on the pitching view, 15 to 20 in close-ups. Tested without much effect: Strict Rendering
   Mode off (+1 to 2 FPS), FIFO accuracy, Max SPURS Threads 4, SPU loop detection. RPCS3's profiler showed the main
