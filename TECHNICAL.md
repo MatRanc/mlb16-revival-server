@@ -75,11 +75,11 @@ is optional. **Better depth of field** ([`patches/MLB16_dof_fix.yml`](patches/ML
 game's blur in close-ups and replays averaged 4 samples about 3 pixels away (plus the centre), which showed as doubled
 copies of the background and a halo around players, worse with resolution scaling. The blur is an RSX fragment
 program stored in the EBOOT (the 2X MSAA variant the game uses, and an identical 4XR one). The patch rebuilds it: 16
-samples on a spiral out to 2.4 px at 720p plus the centre, each one dropped if it is nearer than the pixel being blurred
-*and* in focus (its own blur amount, from the game's depth formula, is small), so a sharp ball can't bleed into the
+samples on a spiral plus the centre (out to 2.4 px at 720p, scaled down for pixels that are only partly blurred), each
+one dropped if it is nearer than the pixel being blurred *and* in focus (its own blur amount, from the game's depth formula, is small), so a sharp ball can't bleed into the
 blurred crowd while a blurred player still spreads over what's behind him. The sharp/blur blend factor is also clamped
 to 0..1; the game's reaches 2.4 for far objects and overshoots. The depth part of the original is kept word for word.
-At 167 instruction slots the program no longer fits in the original 52, so the patch writes it to the unused tail of
+At 168 instruction slots the program no longer fits in the original 52, so the patch writes it to the unused tail of
 the code segment's last 64 KB page (0x10a4400) and points both program headers' size and ucode offset there; the
 game's loader follows the header. [`tools/dof_patch.py`](tools/dof_patch.py) generates the patch from your own EBOOT
 and explains the layout. Some faint stepping can remain on high-contrast edges at high Sharpness: the game blurs the
