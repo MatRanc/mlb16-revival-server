@@ -364,12 +364,7 @@ def fls_client(sock, addr):
             if attrs.get('target', 'srvr') in ('plyr', 'zone') and c.player:
                 relay(c, xml, attrs)
             elif kind == 'Hello':
-                # only the session_uuid handed out at login (fls_data ticket_session_uuid) gets that player's slot
-                with STATE:
-                    p = next((q for q in BY_ID.values() if q.session_uuid == body.get('session_uuid')), None)
-                if not p:
-                    log(event='fls_rejected', src=c.who(), username=body.get('username'))
-                    break
+                p = BY_ID.get(int(body.get('player_id', 0))) or player_for(body.get('username', '?'))
                 c.player = p
                 with STATE:
                     old, p.fls = p.fls, c
