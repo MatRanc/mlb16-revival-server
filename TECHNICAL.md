@@ -70,6 +70,15 @@ The NP ID lookup patch works around an RPCS3 bug. A fix in RPCS3 itself is on th
 [`fix-np-lookup-npid-async`](https://github.com/MatRanc/rpcs3/tree/fix-np-lookup-npid-async) branch of my fork. Until
 something like it is in an official build, keep the patch on.
 
+The launcher also installs two graphics patches. The crowd fix ([`patches/MLB16_crowd_fix.yml`](patches/MLB16_crowd_fix.yml))
+is optional. **Softer depth of field** ([`patches/MLB16_dof_fix.yml`](patches/MLB16_dof_fix.yml)) is always on: the
+game's blur in close-ups and replays averages 4 samples about 3 pixels away, which showed as doubled copies of the
+background and a halo around players (worse with resolution scaling). The offsets are constants in the blur shader,
+stored in the EBOOT in two variants, and the patch quarters them so it reads as a blur at the Sharpness most people
+use (250 to 400%). At 100% the blur is subtle. Set up also turns MSAA off from 200% up: RPCS3 reads the game's
+multisampled image without filtering, which kept the copies crisp, and supersampling smooths edges better anyway. Found in RenderDoc: the blur is
+the last pass of the frame, which also upscales 720p to the output resolution.
+
 ## How it works
 
 ```
@@ -149,6 +158,7 @@ PS3 root certificates in `dev_flash/data/cert` (each one becomes original + the 
 | `server/certswap.sh`, `certswap.ps1` | adds the host's CA to RPCS3's certificates, keeping the originals (Linux/macOS, Windows) |
 | `patches/MLB16_online.yml` | the five RPCS3 patches |
 | `patches/MLB16_crowd_fix.yml` | the crowd fix from [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), installed by the launcher |
+| `patches/MLB16_dof_fix.yml` | softer depth of field (no doubled background in close-ups), installed by the launcher |
 | `tools/extract_gamedata.py` | extracts `servers_prod.xml` / `services.xml` from your installed update |
 
 Contributions and test reports are welcome. [AGENTS.md](AGENTS.md) has the ground rules: most importantly, never commit

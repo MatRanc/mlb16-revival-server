@@ -32,7 +32,7 @@ for windows in (False, True):
             assert r.patch_config == root / 'config' / 'patch_config.yml' and r.patches == root / 'patches'
 
         names = s.install_patches(r, crowd_fix=True)
-        assert len(names) == 6, names
+        assert len(names) == 7, names
         cfg = s.load_yaml(r.patch_config)
         assert cfg['PPU-otherhash']['Some: patch']['Other Game']['BLUS00000']['01.00']['Enabled'] == 'true'
         assert all(cfg[s.PPU_HASH][n]['MLB The Show 16']['BCUS01089']['01.10']['Enabled'] == 'true' for n in names)
@@ -67,6 +67,7 @@ for windows in (False, True):
         assert s.game_config_status(r, graphics=False, picture='1080p') and s.game_config_status(r, picture='1080p')
         s.install_game_config(r, '100.1.2.3', picture='1080p', scale=500)
         assert s.load_yaml(r.custom_config)['Video']['Resolution Scale'] == '500'
+        assert s.load_yaml(r.custom_config)['Video']['MSAA'] == 'Disabled' and c['Video']['MSAA'] == 'Auto'
         assert s.game_config_status(r, picture='1080p', scale=500) and not s.game_config_status(r, picture='1080p')
 
         certs = root / 'hostcerts'

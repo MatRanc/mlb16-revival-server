@@ -1,0 +1,28 @@
+Version: 1.2
+
+PPU-395faa2b9c12c400d03343cad62ce7aad8ec985b:
+  "Softer depth of field":
+    Games:
+      "MLB The Show 16":
+        BCUS01089: [ 01.10 ]
+    Author: "mister"
+    Notes: "The depth-of-field blur in close-ups and replays samples 4 points about 3 pixels away, which shows as doubled copies of the background and a halo around players, more so with resolution scaling. Quarters the offsets so it reads as a blur at the Sharpness most people use (250-400%)."
+    Patch Version: 1.0
+    Patch:
+      # RSX fragment program constants (halfword-swapped floats) in two variants of the blur shader
+      - [ be32, 0x01121dc0, 0x0000bf40 ] # (-3,-1) -> (-0.75,-0.25)
+      - [ be32, 0x01121dc4, 0x0000be80 ]
+      - [ be32, 0x01121e60, 0x00003e80 ] # (1,-2) -> (0.25,-0.5)
+      - [ be32, 0x01121e64, 0x0000bf00 ]
+      - [ be32, 0x01121f00, 0x00003f40 ] # (3,1) -> (0.75,0.25)
+      - [ be32, 0x01121f04, 0x00003e80 ]
+      - [ be32, 0x01121f70, 0x0000be80 ] # (-1,2) -> (-0.25,0.5)
+      - [ be32, 0x01121f74, 0x00003f00 ]
+      - [ be32, 0x01122180, 0x0000bf40 ]
+      - [ be32, 0x01122184, 0x0000be80 ]
+      - [ be32, 0x01122220, 0x00003e80 ]
+      - [ be32, 0x01122224, 0x0000bf00 ]
+      - [ be32, 0x011222c0, 0x00003f40 ]
+      - [ be32, 0x011222c4, 0x00003e80 ]
+      - [ be32, 0x01122330, 0x0000be80 ]
+      - [ be32, 0x01122334, 0x00003f00 ]

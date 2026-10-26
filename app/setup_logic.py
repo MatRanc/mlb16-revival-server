@@ -215,7 +215,7 @@ def patch_names(text):
 def install_patches(r, crowd_fix=True):
     """Writes patches/BCUS01089_patch.yml (RPCS3 loads it for this game only, next to imported_patch.yml)
     and ticks every patch in it in patch_config.yml. Returns the patch names."""
-    files = [bundle_dir() / 'patches' / 'MLB16_online.yml']
+    files = [bundle_dir() / 'patches' / 'MLB16_online.yml', bundle_dir() / 'patches' / 'MLB16_dof_fix.yml']
     if crowd_fix:
         files.append(bundle_dir() / 'patches' / 'MLB16_crowd_fix.yml')
     text = 'Version: 1.2\n\n' + PPU_HASH + ':\n' + ''.join(patch_body(f) for f in files)
@@ -240,11 +240,18 @@ def patches_status(r, crowd_fix=True):
     cfg = load_yaml(r.patch_config).get(PPU_HASH, {})
     names = lambda f: patch_names('Version: 1.2\n\n' + PPU_HASH + ':\n' + patch_body(bundle_dir() / 'patches' / f))
     on = lambda n: cfg.get(n, {}).get('MLB The Show 16', {}).get(TITLE_ID, {}).get('01.10', {}).get('Enabled') == 'true'
-    return ((r.patches / f'{TITLE_ID}_patch.yml').exists() and all(on(n) for n in names('MLB16_online.yml'))
+    return ((r.patches / f'{TITLE_ID}_patch.yml').exists()
+            and all(on(n) for n in names('MLB16_online.yml') + names('MLB16_dof_fix.yml'))
             and all(on(n) == crowd_fix for n in names('MLB16_crowd_fix.yml')))
 
 
 # ---------------------------------------------------------------- per-game config
+
+def msaa(scale):
+    """MSAA off from 200% up: supersampling already smooths edges, and RPCS3 reads the game's multisampled image
+    without filtering, which turns the depth-of-field blur into crisp doubled copies."""
+    return 'Disabled' if int(scale) >= 200 else 'Auto'
+
 
 def install_game_config(r, server_ip, graphics=True, picture='720p', scale=None):
     """Merges our settings into RPCS3's custom config for this game (created if missing). RPCS3 applies it on top
@@ -266,6 +273,7 @@ def install_game_config(r, server_ip, graphics=True, picture='720p', scale=None)
     video.update(PICTURE[picture], **{'Output Scaling Mode': 'Bilinear'})
     if scale:
         video['Resolution Scale'] = str(scale)
+    video['MSAA'] = msaa(video['Resolution Scale'])
     write_text(r.custom_config, dump_yaml(cfg))
 
 
@@ -274,7 +282,8 @@ def game_config_status(r, graphics=True, picture='720p', scale=None):
     cfg = load_yaml(r.custom_config)
     core, video = cfg.get('Core', {}), cfg.get('Video', {})
     want = {**VIDEO_STABILITY, **(GRAPHICS if graphics else {}), **PICTURE[picture],
-            'Output Scaling Mode': 'Bilinear', **({'Resolution Scale': str(scale)} if scale else {})}
+            'Output Scaling Mode': 'Bilinear', 'Resolution Scale': str(scale or PICTURE[picture]['Resolution Scale'])}
+    want['MSAA'] = msaa(want['Resolution Scale'])
     return (all(core.get(k) == v for k, v in STABILITY.items()) and all(video.get(k) == v for k, v in want.items()))
 
 
