@@ -1,6 +1,6 @@
 """Everything the app does to RPCS3 and the host, without the window: patches, per-game config, certificates,
 server certificates, invites. Kept separate so it can be tested headless (see test_setup_logic.py)."""
-import datetime, ipaddress, json, os, re, shutil, socket, subprocess, sys
+import datetime, functools, ipaddress, json, os, re, shutil, socket, subprocess, sys
 from pathlib import Path
 
 import yaml
@@ -228,6 +228,7 @@ ALWAYS_ON = ['MLB16_online.yml', 'MLB16_dof_fix.yml']
 CROWD_FIX, FACE_FIX = 'MLB16_crowd_fix.yml', 'MLB16_triangle_fix.yml'   # optional, ticked in the app
 
 
+@functools.cache   # bundled files don't change while the launcher runs; refresh calls this on every tab switch
 def file_patch_names(f):
     return patch_names('Version: 1.2\n\n' + PPU_HASH + ':\n' + patch_body(bundle_dir() / 'patches' / f))
 
@@ -418,18 +419,18 @@ def lan_ip():
 
 
 def tailscale_ip():
-    exe = shutil.which('tailscale') or next((p for p in (r'C:\Program Files\Tailscale\tailscale.exe',
-                                                         '/Applications/Tailscale.app/Contents/MacOS/Tailscale')
-                                             if os.path.exists(p)), None)
-    if not exe:
-        return None
+    """This computer's Tailscale address if Tailscale is connected. Asks the OS which address it would use to reach
+    Tailscale's DNS address (no packet is sent) instead of running the CLI, which on macOS opens the Tailscale app."""
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        out = subprocess.run([exe, 'ip', '-4'], capture_output=True, text=True, timeout=5,
-                             creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)).stdout
-    except (OSError, subprocess.SubprocessError):
+        s.connect(('100.100.100.100', 9))
+        ip = s.getsockname()[0]
+    except OSError:
         return None
-    ips = [l.strip() for l in out.splitlines() if l.strip()]
-    return ips[0] if ips else None
+    finally:
+        s.close()
+    # same address as the normal route means Tailscale isn't carrying it (off, or a carrier's 100.x network)
+    return ip if ipaddress.ip_address(ip) in ipaddress.ip_network('100.64.0.0/10') and ip != lan_ip() else None
 
 
 def make_invite(host_ip, ca_pem):
