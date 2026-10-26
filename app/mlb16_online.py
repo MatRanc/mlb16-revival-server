@@ -5,6 +5,7 @@
 """
 import json, os, queue, subprocess, sys, threading, webbrowser
 import tkinter as tk
+import tkinter.font as tkfont
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
@@ -105,7 +106,6 @@ class App(tk.Tk):
             self.iconphoto(True, tk.PhotoImage(file=str(s.bundle_dir() / 'app' / 'icon.png')))
         except tk.TclError:
             pass
-        self.minsize(640, 560)
         try:
             import sv_ttk
             sv_ttk.set_theme('dark')
@@ -120,6 +120,10 @@ class App(tk.Tk):
         style.configure('Hint.TLabel', foreground='#9a9a9a')   # fixed colours: "gray" differs between platforms
         style.configure('Link.TLabel', foreground='#4ea1ff')
         style.configure('Running.TLabel', foreground='#3fb950')
+        # headings from the theme's body font, 2 sizes up: a fixed 11pt is smaller than body text on macOS
+        base = tkfont.Font(font=style.lookup('TLabel', 'font') or 'TkDefaultFont')
+        self.h = base.copy()
+        self.h.configure(weight='bold', size=base.cget('size') + (2 if base.cget('size') > 0 else -2))   # <0 = pixels
         self.cfg = Settings()
         self.server = None
         self.lines = queue.Queue()
@@ -131,6 +135,8 @@ class App(tk.Tk):
         nb.bind('<<NotebookTabChanged>>', lambda e: self.refresh())
         self.protocol('WM_DELETE_WINDOW', self.quit_app)
         self.refresh()
+        self.update_idletasks()   # can't shrink below the content (it doesn't scroll), but never taller than the screen
+        self.minsize(self.winfo_reqwidth(), min(self.winfo_reqheight(), self.winfo_screenheight() - 80))
         self.after(200, self.pump)
 
     # ------------------------------------------------------------ setup tab
@@ -139,29 +145,28 @@ class App(tk.Tk):
         f = ttk.Frame(nb, padding=16)
         f.columnconfigure(1, weight=1)
 
-        ttk.Label(f, text='RPCS3 folder', font=('', 11, 'bold')).grid(row=0, column=0, columnspan=3, sticky='w')
+        ttk.Label(f, text='RPCS3 folder', font=self.h).grid(row=0, column=0, columnspan=3, sticky='w', pady=(0, 6))
         default = s.Rpcs3.default_root()
         self.rpcs3_dir = tk.StringVar(value=self.cfg.get('rpcs3_dir') or (str(default) if default else ''))
-        ttk.Entry(f, textvariable=self.rpcs3_dir).grid(row=1, column=0, columnspan=2, sticky='ew', pady=4)
+        ttk.Entry(f, textvariable=self.rpcs3_dir).grid(row=1, column=0, columnspan=2, sticky='ew')
         ttk.Button(f, text='Browse…', command=self.pick_rpcs3).grid(row=1, column=2, padx=(8, 0))
         hint = ('The folder with rpcs3.exe.' if sys.platform == 'win32' else 'Usually found automatically.')
         ttk.Label(f, text=hint, style='Hint.TLabel').grid(row=2, column=0, columnspan=3, sticky='w')
 
-        ttk.Label(f, text='How are you playing?', font=('', 11, 'bold')).grid(row=3, column=0, columnspan=3,
-                                                                                sticky='w', pady=(16, 0))
+        ttk.Label(f, text='How are you playing?', font=self.h).grid(row=3, column=0, columnspan=3, sticky='w',
+                                                                    pady=(16, 6))
         self.mode = tk.StringVar(value=self.cfg['mode'])
         ttk.Radiobutton(f, text="I'm hosting (the server runs on this computer)", variable=self.mode, value='host',
-                        command=self.refresh).grid(row=4, column=0, columnspan=3, sticky='w', pady=2)
+                        command=self.refresh).grid(row=4, column=0, columnspan=3, sticky='w', pady=(0, 4))
         ttk.Radiobutton(f, text="I'm joining a friend (they sent me an invite file)", variable=self.mode, value='join',
-                        command=self.refresh).grid(row=5, column=0, columnspan=3, sticky='w', pady=2)
-        inv = ttk.Frame(f)   # shown only when joining; the empty label keeps the spacing when hosting
-        inv.grid(row=6, column=0, columnspan=3, sticky='w', padx=(28, 0), pady=(2, 0))
-        self.invite_btn = ttk.Button(inv, text='Open invite…', command=self.open_invite)
-        self.invite_label = ttk.Label(inv, style='Hint.TLabel')
+                        command=self.refresh).grid(row=5, column=0, columnspan=3, sticky='w', pady=(0, 4))
+        self.inv = ttk.Frame(f)   # shown only when joining
+        self.inv.grid(row=6, column=0, columnspan=3, sticky='w', padx=(28, 0))
+        self.invite_btn = ttk.Button(self.inv, text='Open invite…', command=self.open_invite)
+        self.invite_label = ttk.Label(self.inv, style='Hint.TLabel')
         self.invite_label.pack(side='right', padx=(10, 0))
 
-        ttk.Label(f, text='Graphics', font=('', 11, 'bold')).grid(row=7, column=0, columnspan=3, sticky='w',
-                                                                  pady=(16, 0))
+        ttk.Label(f, text='Graphics', font=self.h).grid(row=7, column=0, columnspan=3, sticky='w', pady=(16, 6))
         self.crowd = tk.BooleanVar(value=self.cfg['crowd_fix'])
         self.graphics = tk.BooleanVar(value=self.cfg['graphics'])
         self.face = tk.BooleanVar(value=self.cfg['face_fix'])
@@ -195,16 +200,16 @@ class App(tk.Tk):
         self.scale_label = ttk.Label(sharp, text=f'{self.scale.get()}%', width=5)
         self.scale_label.pack(side='left', padx=(10, 0))
         ttk.Label(pic, text='Higher sharpness needs a stronger graphics card. 1080p starts at 150%.',
-                  style='Hint.TLabel').grid(row=2, column=1, sticky='w')
+                  style='Hint.TLabel', wraplength=520, justify='left').grid(row=2, column=1, sticky='w')
         ttk.Label(f, text='Changes apply when you click Set up RPCS3.',
-                  style='Hint.TLabel').grid(row=11, column=0, columnspan=3, sticky='w', pady=(12, 0))
+                  style='Hint.TLabel').grid(row=11, column=0, columnspan=3, sticky='w', pady=(20, 6))
 
         self.setup_btn = ttk.Button(f, text='Set up RPCS3', command=self.do_setup)
-        self.setup_btn.grid(row=12, column=0, columnspan=3, sticky='ew', pady=(6, 4), ipady=4)
+        self.setup_btn.grid(row=12, column=0, columnspan=3, sticky='ew', pady=(0, 4), ipady=4)
         self.launch_btn = ttk.Button(f, text='Launch RPCS3', command=self.launch_rpcs3)
         self.launch_btn.grid(row=13, column=0, columnspan=3, sticky='ew', ipady=4)
 
-        self.status = ttk.Label(f, justify='left')
+        self.status = ttk.Label(f, justify='left', wraplength=560)
         self.status.grid(row=14, column=0, columnspan=3, sticky='w', pady=(16, 0))
         links = ttk.Frame(f)
         links.grid(row=15, column=0, columnspan=3, sticky='w', pady=(12, 0))
@@ -345,9 +350,9 @@ class App(tk.Tk):
     def refresh(self):
         hosting = self.mode.get() == 'host'
         if hosting:
-            self.invite_btn.pack_forget()
-            self.invite_label.config(text='')
+            self.inv.grid_remove()
         else:
+            self.inv.grid()
             self.invite_btn.pack(side='left', before=self.invite_label)
             self.invite_label.config(text=f'Loaded: server at {self.cfg["invite_host"]}' if self.cfg.get('invite_host')
                                      else 'No invite loaded yet')
@@ -392,31 +397,31 @@ class App(tk.Tk):
         f = ttk.Frame(nb, padding=16)
         f.columnconfigure(0, weight=1)
         f.rowconfigure(9, weight=1)
-        h = ('', 11, 'bold')
-        ttk.Label(f, text='1. Start the server', font=h).grid(row=0, column=0, sticky='w')
+        h = self.h
+        ttk.Label(f, text='1. Start the server', font=h).grid(row=0, column=0, sticky='w', pady=(0, 6))
         bar = ttk.Frame(f)
-        bar.grid(row=1, column=0, sticky='ew', pady=(6, 0))
+        bar.grid(row=1, column=0, sticky='ew')
         self.start_btn = ttk.Button(bar, text='Start server', style='Accent.TButton', command=self.start_server)
         self.start_btn.pack(side='left')
         self.stop_btn = ttk.Button(bar, text='Stop', command=self.stop_server, state='disabled')
-        self.stop_btn.pack(side='left', padx=8)
+        self.stop_btn.pack(side='left', padx=(8, 0))
         self.server_state = ttk.Label(bar, text='○  Stopped', style='Hint.TLabel')
-        self.server_state.pack(side='left', padx=8)
+        self.server_state.pack(side='left', padx=(16, 0))
 
-        ttk.Label(f, text='2. Send your friend an invite', font=h).grid(row=2, column=0, sticky='w', pady=(18, 0))
-        ttk.Label(f, text='Where is your friend?').grid(row=3, column=0, sticky='w', pady=(6, 0))
+        ttk.Label(f, text='2. Send your friend an invite', font=h).grid(row=2, column=0, sticky='w', pady=(16, 6))
+        ttk.Label(f, text='Where is your friend?').grid(row=3, column=0, sticky='w')
         self.where = tk.StringVar()
         self.where_btns = ttk.Frame(f)
         self.where_btns.grid(row=4, column=0, sticky='w')
+        self.where_hint = ttk.Label(f, style='Hint.TLabel', wraplength=552, justify='left')   # under the radio text
+        self.where_hint.grid(row=5, column=0, sticky='w', padx=(28, 0), pady=(2, 0))
         inv = ttk.Frame(f)
-        inv.grid(row=5, column=0, sticky='w', pady=(8, 0))
+        inv.grid(row=6, column=0, sticky='w', pady=(8, 0))
         ttk.Button(inv, text='Save invite file…', command=self.save_invite).pack(side='left')
-        self.where_hint = ttk.Label(f, style='Hint.TLabel', wraplength=580, justify='left')
-        self.where_hint.grid(row=6, column=0, sticky='w', pady=(4, 0))
         ttk.Label(f, text='The invite holds your address and your server certificate (never your private keys).',
-                  style='Hint.TLabel', wraplength=580, justify='left').grid(row=7, column=0, sticky='w')
+                  style='Hint.TLabel', wraplength=580, justify='left').grid(row=7, column=0, sticky='w', pady=(4, 0))
 
-        ttk.Label(f, text='3. Server activity', font=h).grid(row=8, column=0, sticky='w', pady=(18, 0))
+        ttk.Label(f, text='3. Server activity', font=h).grid(row=8, column=0, sticky='w', pady=(16, 0))
         self.log = tk.Text(f, height=10, wrap='word', state='disabled', relief='flat', borderwidth=0,
                            background='#0b0b0b', foreground='#d8d8d8', padx=10, pady=8)   # terminal-like
         self.log.grid(row=9, column=0, sticky='nsew', pady=(4, 0))
@@ -444,7 +449,7 @@ class App(tk.Tk):
         for i, (ip, text) in enumerate(choices):
             ttk.Radiobutton(self.where_btns, text=text, variable=self.where, value=ip or f'none{i}',   # unselectable
                             state='normal' if ip else 'disabled',
-                            command=self.where_changed).pack(anchor='w', pady=1)
+                            command=self.where_changed).pack(anchor='w', pady=(0, 4))
         if self.where.get() not in (lan, ts) or not self.where.get():
             self.where.set(ts or lan or '')
         self.where_changed()
@@ -453,6 +458,7 @@ class App(tk.Tk):
         ts = self.where.get() and self.where.get() == self.ts_ip
         self.where_hint.config(text='Your friend needs Tailscale too, in your tailnet: invite them, or share this '
                                     'computer with them from the Tailscale admin console.' if ts else '')
+        self.where_hint.grid() if ts else self.where_hint.grid_remove()   # no empty line when there's no hint
 
     def save_invite(self):
         ip = self.where.get()
