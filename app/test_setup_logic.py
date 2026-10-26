@@ -45,12 +45,16 @@ for windows in (False, True):
 
         c0 = s.load_yaml(r.custom_config)
         assert c0['Video']['Resolution Scale'] == '150'
-        c0['Core']['SPU Block Size'] = 'Mega'
+        # speed tweaks copied from a player's global config, all reset by setup
+        c0['Core'].update({'SPU Block Size': 'Mega', 'RSX FIFO Fetch Accuracy': 'Fast', 'Libraries Control': ['libx.sprx:lle']})
+        c0['Video'].update({'Frame limit': '60', 'Multithreaded RSX': 'true'})
+        c0['Log'] = {'sys_net': 'Trace'}
         r.custom_config.write_text(s.dump_yaml(c0))
         s.install_game_config(r, '100.1.2.3', picture='720p')
         c = s.load_yaml(r.custom_config)
         assert c['Core']['PPU Decoder'] == 'Recompiler (LLVM)' and c['Video']['Resolution Scale'] == '100'
-        assert c['Core']['SPU Block Size'] == 'Safe' and c['Core']['Accurate SPU Reservations'] == 'true' and c['Core']['RSX FIFO Fetch Accuracy'] == 'Atomic'
+        assert all(c['Core'][k] == v for k, v in s.STABILITY.items()) and c['Core']['Libraries Control'] == []
+        assert c['Video']['Frame limit'] == 'Auto' and c['Video']['Multithreaded RSX'] == 'false' and c['Log'] == {'sys_net': 'Notice'}
         assert c['Video']['Strict Rendering Mode'] == 'true' and c['Video']['Resolution'] == '1280x720'
         assert c['Video']['Output Scaling Mode'] == 'Bilinear' and c['Video']['Anisotropic Filter Override'] == '0'
         assert s.game_config_status(r, picture='720p') and not s.game_config_status(r, picture='1080p')

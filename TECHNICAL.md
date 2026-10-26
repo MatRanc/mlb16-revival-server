@@ -32,8 +32,11 @@ without it. It costs some performance, mostly on Macs.
 The CPU settings matter for stability: two online matches froze on a player who had SPU Block Size *Mega* and
 Accurate SPU Reservations off (with 1440×1080 and 200% scale) (one silent hang, and one RPCS3 error inside `cellSpursRemoveWorkload`).
 On Linux, RSX FIFO Accuracy *Fast* logged "FIFO error: possible desync event" every few seconds, then froze or crashed
-RPCS3; *Atomic* logged none. The launcher
-always sets all three back to the defaults for this game, even with "Recommended graphics settings" unticked. Default
+RPCS3; *Atomic* logged none. Every freeze traced so far came from a setting changed away from RPCS3's default, often
+copied from the player's global config (RPCS3's **Create Custom Configuration** copies all global values). So the
+launcher always resets every CPU, SPU and RSX accuracy or timing setting for this game to RPCS3's default (the full
+list is `STABILITY` and `VIDEO_STABILITY` in [app/setup_logic.py](app/setup_logic.py)), and sets this game's
+per-channel log levels back to Notice, even with "Recommended graphics settings" unticked. Default
 Resolution *1440×1080* is not 1440p: it's a stretched PS3 output mode, and the game still renders at 720p. The crowd itself needs the **crowd fix patch** from
 [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), which the launcher also installs.
 
@@ -99,7 +102,7 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
 - With Strict Rendering Mode on, an M1 Mac ran about 35 FPS in a match.
 - RPCS3 itself can still freeze mid-game. Seen: an SPU-related hang and error on Windows with non-default SPU
   settings, and on Linux a frozen picture or an RSX crash after "FIFO error: possible desync event" errors, which
-  went away with RSX FIFO Accuracy *Atomic*. The launcher now sets all of these. When one player's game freezes, the
+  went away with RSX FIFO Accuracy *Atomic*. The launcher now resets all of these to RPCS3's defaults. When one player's game freezes, the
   other's waits for it and freezes too.
 - Close-ups (walk-ups, the manager in the dugout, mound visits) are CPU-bound. On a Ryzen 5 2600X at 720p: about 60
   FPS fielding, 35 batting, 24 on the pitching view, 15 to 20 in close-ups. Tested without effect: Strict Rendering

@@ -19,12 +19,41 @@ GRAPHICS = {
     'Write Color Buffers': 'true', 'Read Color Buffers': 'true',
     'Write Depth Buffer': 'true', 'Read Depth Buffer': 'true',
     'Strict Rendering Mode': 'true', 'Disable Vertex Cache': 'true',
-    'Shader Precision': 'High', 'Accurate ZCULL stats': 'true', 'Relaxed ZCULL Sync': 'false',
+    'Shader Precision': 'High',
 }
-# Always set: two matches froze with SPU Block Size "Mega" and Accurate SPU Reservations off (a hang, and an RPCS3
-# error inside cellSpursRemoveWorkload). RSX FIFO Fetch Accuracy "Fast" gave "FIFO error: possible desync event"
-# every few seconds and then a fatal RSX error; none with "Atomic". These are RPCS3's defaults.
-STABILITY = {'SPU Block Size': 'Safe', 'Accurate SPU Reservations': 'true', 'RSX FIFO Fetch Accuracy': 'Atomic'}
+# Always set, back to RPCS3's defaults (from RPCS3's system_config.h): every CPU, SPU and RSX accuracy or timing
+# setting, so speed tweaks from a player's global config can't freeze a match. Every freeze we traced came from one:
+# SPU Block Size "Mega" with Accurate SPU Reservations off (a hang, and an error inside cellSpursRemoveWorkload), and
+# RSX FIFO Fetch Accuracy "Fast" ("FIFO error: possible desync event", then a frozen picture or a fatal RSX error).
+STABILITY = {
+    'PPU Decoder': 'Recompiler (LLVM)', 'SPU Decoder': 'Recompiler (LLVM)', 'PPU Threads': '2',
+    'Thread Scheduler Mode': 'Operating System', 'Set DAZ and FTZ': 'false',
+    'SPU Block Size': 'Safe', 'Accurate SPU Reservations': 'true', 'Accurate SPU DMA': 'false',
+    'RSX FIFO Fetch Accuracy': 'Atomic', 'Accurate RSX reservation access': 'false',
+    'Accurate Cache Line Stores': 'false', 'PPU Reservation Priority Over SPUs': 'false',
+    'Accurate PPU 128-byte Reservation Op Max Length': '0',
+    'SPU Reservation Busy Waiting Enabled': 'false', 'SPU Reservation Busy Waiting Percentage 1': '100',
+    'SPU GETLLAR Busy Waiting Percentage': '100', 'Disable SPU GETLLAR Spin Optimization': 'false',
+    'Preferred SPU Threads': '0', 'SPU delay penalty': '3', 'SPU loop detection': 'false', 'Max SPURS Threads': '6',
+    'SPU MMIO Delay Enabled': 'false', 'SPU Verification': 'true', 'MFC Commands Shuffling Limit': '0',
+    'SPU XFloat Accuracy': 'Approximate', 'Stub PPU Traps': '0', 'PPU Vector NaN Handling': 'true',
+    'Use Accurate DFMA': 'true', 'PPU Set Saturation Bit': 'false', 'PPU Accurate Non-Java Mode': 'false',
+    'PPU Accurate Vector NaN Values': 'false', 'PPU Set FPCC Bits': 'false', 'PPU Accurate Vector Estimates': 'false',
+    'Debug Console Mode': 'false', 'HLE lwmutex': 'false', 'Libraries Control': [], 'Clocks scale': '100',
+    'SPU Wake-Up Delay': '0', 'Max CPU Preempt Count': '0', 'PPU Event Wake-Up Delay': '0',
+    'Allow RSX CPU Preemptions': 'true', 'Usleep Time Addend': '0',
+    'Sleep Timers Accuracy': 'Usleep Only' if sys.platform == 'win32' else 'As Host',
+    'PPU Profiler': 'false', 'SPU Profiler': 'false',
+}
+VIDEO_STABILITY = {
+    'Frame limit': 'Auto', 'Second Frame Limit': '0', 'Shader Mode': 'Async Recompiler with Shader Interpreter',
+    'Multithreaded RSX': 'false', 'Disable FIFO Reordering': 'false', 'Disable ZCull Occlusion Queries': 'false',
+    'Strict Texture Flushing': 'false', 'Enable Frame Skip': 'false', 'Force CPU Blit': 'false',
+    'Handle RSX Memory Tiling': 'false', 'Framebuffer Aliasing Heuristic Bias': 'Auto', 'Driver Wake-Up Delay': '0',
+    'Vblank Rate': '60', 'Vblank NTSC Fixup': 'true', 'Consecutive Frames To Draw': '1',
+    'Consecutive Frames To Skip': '1', 'Disable Asynchronous Memory Manager': 'false', 'Allow Host GPU Labels': 'false',
+    'DECR memory layout': 'false', 'Accurate ZCULL stats': 'true', 'Relaxed ZCULL Sync': 'false',
+}
 # The game's own output resolution, then RPCS3's internal scale on top of it
 PICTURE = {
     '720p': {'Resolution': '1280x720', 'Resolution Scale': '100', 'Anisotropic Filter Override': '0'},
@@ -227,7 +256,11 @@ def install_game_config(r, server_ip, graphics=True, picture='720p'):
     net['UPNP Enabled'] = 'true'
     net['IP swap list'] = f'{GAME_HOST}={server_ip}&&{TELEMETRY_HOST}={server_ip}'
     cfg.setdefault('Core', {}).update(STABILITY)
+    # Trace logging slows the game down. Explicit levels: an empty map is refilled from the global config whenever
+    # RPCS3's settings window re-saves this file.
+    cfg['Log'] = {k: 'Notice' for k in cfg.get('Log', {})}
     video = cfg.setdefault('Video', {})
+    video.update(VIDEO_STABILITY)
     if graphics:
         video.update(GRAPHICS)
     video.update(PICTURE[picture], **{'Output Scaling Mode': 'Bilinear'})
@@ -238,7 +271,8 @@ def game_config_status(r, graphics=True, picture='720p'):
     """True if this game's config has the settings install_game_config would write with these options."""
     cfg = load_yaml(r.custom_config)
     core, video = cfg.get('Core', {}), cfg.get('Video', {})
-    want = {**(GRAPHICS if graphics else {}), **PICTURE[picture], 'Output Scaling Mode': 'Bilinear'}
+    want = {**VIDEO_STABILITY, **(GRAPHICS if graphics else {}), **PICTURE[picture],
+            'Output Scaling Mode': 'Bilinear'}
     return (all(core.get(k) == v for k, v in STABILITY.items()) and all(video.get(k) == v for k, v in want.items()))
 
 
