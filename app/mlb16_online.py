@@ -48,7 +48,7 @@ class Settings(dict):
     path = s.data_dir() / 'settings.json'
 
     def __init__(self):
-        super().__init__(mode='host', crowd_fix=True, graphics=True, picture='720p')
+        super().__init__(mode='host', crowd_fix=True, face_fix=True, graphics=True, picture='720p')
         try:
             self.update(json.loads(self.path.read_text()))
         except (OSError, ValueError):
@@ -164,8 +164,13 @@ class App(tk.Tk):
                                                                  pady=(16, 0))
         self.crowd = tk.BooleanVar(value=self.cfg['crowd_fix'])
         self.graphics = tk.BooleanVar(value=self.cfg['graphics'])
-        ttk.Checkbutton(f, text='Crowd fix patch (recommended)', variable=self.crowd, command=self.refresh).grid(
-            row=8, column=0, columnspan=3, sticky='w', pady=2)
+        self.face = tk.BooleanVar(value=self.cfg['face_fix'])
+        fixes = ttk.Frame(f)
+        fixes.grid(row=8, column=0, columnspan=3, sticky='w', pady=2)
+        ttk.Checkbutton(fixes, text='Crowd fix patch (recommended)', variable=self.crowd,
+                        command=self.refresh).pack(side='left')
+        ttk.Checkbutton(fixes, text='Face fix patch (recommended, untick for weak GPUs)', variable=self.face,
+                        command=self.refresh).pack(side='left', padx=(16, 0))
         ttk.Checkbutton(f, text='Recommended graphics settings (fixes dark crowd and black boxes)',
                         variable=self.graphics, command=self.refresh).grid(row=9, column=0, columnspan=3, sticky='w', pady=2)
         # Resolution and Sharpness share a grid so their controls line up
@@ -309,7 +314,7 @@ class App(tk.Tk):
             messagebox.showinfo('Invite needed', ca)
             return
         try:
-            s.install_patches(r, crowd_fix=self.crowd.get())
+            s.install_patches(r, crowd_fix=self.crowd.get(), face_fix=self.face.get())
             s.install_game_config(r, ip, graphics=self.graphics.get(), picture=self.picture.get(),
                                   scale=self.scale.get())
             s.install_ca(r, ca)
@@ -317,7 +322,7 @@ class App(tk.Tk):
             messagebox.showerror('Setup failed', "Couldn't change the files in your RPCS3 folder. Make sure RPCS3 is "
                                  f'closed and the folder is right, then try again.\n\nDetails: {e}')
             return
-        self.cfg.update(rpcs3_dir=str(r.root), mode=self.mode.get(), crowd_fix=self.crowd.get(),
+        self.cfg.update(rpcs3_dir=str(r.root), mode=self.mode.get(), crowd_fix=self.crowd.get(), face_fix=self.face.get(),
                         graphics=self.graphics.get(), picture=self.picture.get(), scale=self.scale.get())
         self.cfg.save()
         self.refresh()
@@ -349,8 +354,9 @@ class App(tk.Tk):
             where = 'your server' if server == '127.0.0.1' else server
             crowd, graphics, picture, scale = self.crowd.get(), self.graphics.get(), self.picture.get(), self.scale.get()
             # each row compares RPCS3's files with the options chosen above, so a changed option shows up here
-            rows = [(s.patches_status(r, crowd), 'Patches installed' + (' (with crowd fix)' if crowd else ''),
-                     'Patches'),
+            fixes = ' and '.join(n for n, on in (('crowd fix', crowd), ('face fix', self.face.get())) if on)
+            rows = [(s.patches_status(r, crowd, self.face.get()),
+                     'Patches installed' + (f' (with {fixes})' if fixes else ''), 'Patches'),
                     (s.game_config_status(r, graphics, picture, scale), f'Game settings applied ({picture}, {scale}%)',
                      'Game settings'),
                     (server is not None and server == want_ip, f'Connects to {where}', 'Server address'),

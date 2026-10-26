@@ -212,37 +212,43 @@ def patch_names(text):
     return list(yaml.safe_load(text)[PPU_HASH])
 
 
-def install_patches(r, crowd_fix=True):
+ALWAYS_ON = ['MLB16_online.yml', 'MLB16_dof_fix.yml']
+CROWD_FIX, FACE_FIX = 'MLB16_crowd_fix.yml', 'MLB16_triangle_fix.yml'   # optional, ticked in the app
+
+
+def file_patch_names(f):
+    return patch_names('Version: 1.2\n\n' + PPU_HASH + ':\n' + patch_body(bundle_dir() / 'patches' / f))
+
+
+def install_patches(r, crowd_fix=True, face_fix=True):
     """Writes patches/BCUS01089_patch.yml (RPCS3 loads it for this game only, next to imported_patch.yml)
     and ticks every patch in it in patch_config.yml. Returns the patch names."""
-    files = [bundle_dir() / 'patches' / 'MLB16_online.yml', bundle_dir() / 'patches' / 'MLB16_dof_fix.yml']
-    if crowd_fix:
-        files.append(bundle_dir() / 'patches' / 'MLB16_crowd_fix.yml')
-    text = 'Version: 1.2\n\n' + PPU_HASH + ':\n' + ''.join(patch_body(f) for f in files)
+    optional = {CROWD_FIX: crowd_fix, FACE_FIX: face_fix}
+    files = ALWAYS_ON + [f for f, on in optional.items() if on]
+    text = 'Version: 1.2\n\n' + PPU_HASH + ':\n' + ''.join(patch_body(bundle_dir() / 'patches' / f) for f in files)
     names = patch_names(text)
     write_text(r.patches / f'{TITLE_ID}_patch.yml', text)
 
     cfg = load_yaml(r.patch_config)
     game = cfg.setdefault(PPU_HASH, {})
-    crowd = patch_names('Version: 1.2\n\n' + PPU_HASH + ':\n' + patch_body(bundle_dir() / 'patches' / 'MLB16_crowd_fix.yml'))
     for n in names:
         game[n] = {'MLB The Show 16': {TITLE_ID: {'01.10': {'Enabled': 'true'}}}}
-    if not crowd_fix:   # unticked in the app: untick it in RPCS3 too, wherever it came from
-        for n in crowd:
+    for f, on in optional.items():   # unticked in the app: untick it in RPCS3 too, wherever it came from
+        for n in file_patch_names(f) if not on else []:
             if n in game:
                 game[n] = {'MLB The Show 16': {TITLE_ID: {'01.10': {'Enabled': 'false'}}}}
     write_text(r.patch_config, dump_yaml(cfg))
     return names
 
 
-def patches_status(r, crowd_fix=True):
-    """True if the online patches are installed and ticked, and the crowd fix is ticked exactly when wanted."""
+def patches_status(r, crowd_fix=True, face_fix=True):
+    """True if the always-on patches are installed and ticked, and each optional one is ticked exactly when wanted."""
     cfg = load_yaml(r.patch_config).get(PPU_HASH, {})
-    names = lambda f: patch_names('Version: 1.2\n\n' + PPU_HASH + ':\n' + patch_body(bundle_dir() / 'patches' / f))
     on = lambda n: cfg.get(n, {}).get('MLB The Show 16', {}).get(TITLE_ID, {}).get('01.10', {}).get('Enabled') == 'true'
     return ((r.patches / f'{TITLE_ID}_patch.yml').exists()
-            and all(on(n) for n in names('MLB16_online.yml') + names('MLB16_dof_fix.yml'))
-            and all(on(n) == crowd_fix for n in names('MLB16_crowd_fix.yml')))
+            and all(on(n) for f in ALWAYS_ON for n in file_patch_names(f))
+            and all(on(n) == want for f, want in ((CROWD_FIX, crowd_fix), (FACE_FIX, face_fix))
+                    for n in file_patch_names(f)))
 
 
 # ---------------------------------------------------------------- per-game config

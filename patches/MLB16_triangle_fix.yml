@@ -1,0 +1,14 @@
+Version: 1.2
+
+PPU-395faa2b9c12c400d03343cad62ce7aad8ec985b:
+  "Fix holes in player faces":
+    Games:
+      "MLB The Show 16":
+        BCUS01089: [ 01.10 ]
+    Author: "mister"
+    Notes: "The game's SPU mesh code (ICE, embedded in the EBOOT) culls triangles too small to cover a pixel at 720p. With resolution scaling those slivers do cover pixels, so faces, ears and caps show pin-holes. Turns the SPU cull commands 0x25, 0x26 and 0x2c into returns; back faces are then hidden by the depth test instead."
+    Patch Version: 1.0
+    Patch:
+      - [ be32, 0x011700c0, 0x35000000 ]  # 0x2c handler (LS 0x12dc0): bi $lr
+      - [ be32, 0x01170818, 0x35000000 ]  # 0x26 handler (LS 0x13518): bi $lr
+      - [ be32, 0x01170820, 0x35000000 ]  # 0x25 handler (LS 0x13520): bi $lr

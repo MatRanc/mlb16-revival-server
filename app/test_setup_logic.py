@@ -32,7 +32,7 @@ for windows in (False, True):
             assert r.patch_config == root / 'config' / 'patch_config.yml' and r.patches == root / 'patches'
 
         names = s.install_patches(r, crowd_fix=True)
-        assert len(names) == 7, names
+        assert len(names) == 8, names
         cfg = s.load_yaml(r.patch_config)
         assert cfg['PPU-otherhash']['Some: patch']['Other Game']['BLUS00000']['01.00']['Enabled'] == 'true'
         assert all(cfg[s.PPU_HASH][n]['MLB The Show 16']['BCUS01089']['01.10']['Enabled'] == 'true' for n in names)
@@ -42,6 +42,10 @@ for windows in (False, True):
         crowd = s.load_yaml(r.patch_config)[s.PPU_HASH]['Crowd fix (single-draw crowd batches)']
         assert crowd['MLB The Show 16']['BCUS01089']['01.10']['Enabled'] == 'false'
         assert s.patches_status(r, crowd_fix=False) and not s.patches_status(r, crowd_fix=True)
+        s.install_patches(r, face_fix=False)
+        face = s.load_yaml(r.patch_config)[s.PPU_HASH]['Fix holes in player faces']
+        assert face['MLB The Show 16']['BCUS01089']['01.10']['Enabled'] == 'false'
+        assert s.patches_status(r, face_fix=False) and not s.patches_status(r)
 
         c0 = s.load_yaml(r.custom_config)
         assert c0['Video']['Resolution Scale'] == '150'

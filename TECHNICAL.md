@@ -70,7 +70,7 @@ The NP ID lookup patch works around an RPCS3 bug. A fix in RPCS3 itself is on th
 [`fix-np-lookup-npid-async`](https://github.com/MatRanc/rpcs3/tree/fix-np-lookup-npid-async) branch of my fork. Until
 something like it is in an official build, keep the patch on.
 
-The launcher also installs two graphics patches. The crowd fix ([`patches/MLB16_crowd_fix.yml`](patches/MLB16_crowd_fix.yml))
+The launcher also installs three graphics patches. The crowd fix ([`patches/MLB16_crowd_fix.yml`](patches/MLB16_crowd_fix.yml))
 is optional. **Better depth of field** ([`patches/MLB16_dof_fix.yml`](patches/MLB16_dof_fix.yml)) is always on: the
 game's blur in close-ups and replays averaged 4 samples about 3 pixels away (plus the centre), which showed as doubled
 copies of the background and a halo around players, worse with resolution scaling. The blur is an RSX fragment
@@ -87,6 +87,14 @@ full-resolution image in this one pass, with no smaller pre-blurred copy to samp
 original offsets (v0.3.9, weak blur) or used 8 samples without the depth check (halos stayed). Set up also turns MSAA
 off from 200% up: RPCS3 reads the game's multisampled image without filtering, and supersampling smooths edges better
 anyway. Found in RenderDoc: the blur is the last pass of the frame, which also upscales 720p to the output resolution.
+
+**Fix holes in player faces** ([`patches/MLB16_triangle_fix.yml`](patches/MLB16_triangle_fix.yml)) is optional and on by
+default (the *Face fix patch* checkbox). With resolution scaling, faces, ears and caps showed pin-holes where the background came through. RenderDoc showed
+real gaps in the head meshes, all smaller than a 720p pixel: the game's SPU mesh code (Naughty Dog's ICE library,
+embedded in the EBOOT) culls triangles too thin to cover a pixel at 720p, which at 300% do cover pixels. The patch turns
+the SPU's three cull commands into returns, so every triangle is drawn and back faces are hidden by the depth test. It
+is not an RPCS3 setting (SPU XFloat Accuracy changes nothing). The GPU then also draws characters' back faces, so on a
+weak graphics card, untick it. [docs/ice-mesh.md](docs/ice-mesh.md) has the details.
 
 ## How it works
 
@@ -168,6 +176,7 @@ PS3 root certificates in `dev_flash/data/cert` (each one becomes original + the 
 | `patches/MLB16_online.yml` | the five RPCS3 patches |
 | `patches/MLB16_crowd_fix.yml` | the crowd fix from [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), installed by the launcher |
 | `patches/MLB16_dof_fix.yml` | better depth of field (smooth blur, no doubled background in close-ups), installed by the launcher |
+| `patches/MLB16_triangle_fix.yml` | fixes pin-holes in player faces with resolution scaling, installed by the launcher (optional) |
 | `tools/dof_patch.py` | generates `MLB16_dof_fix.yml` from your EBOOT |
 | `tools/extract_gamedata.py` | extracts `servers_prod.xml` / `services.xml` from your installed update |
 
