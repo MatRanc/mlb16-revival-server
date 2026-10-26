@@ -153,27 +153,28 @@ class App(tk.Tk):
         ttk.Radiobutton(f, text="I'm hosting (the server runs on this computer)", variable=self.mode, value='host',
                         command=self.refresh).grid(row=4, column=0, columnspan=3, sticky='w', pady=2)
         ttk.Radiobutton(f, text="I'm joining a friend (they sent me an invite file)", variable=self.mode, value='join',
-                        command=self.refresh).grid(row=5, column=0, columnspan=2, sticky='w', pady=2)
-        self.invite_btn = ttk.Button(f, text='Open invite…', command=self.open_invite)
-        self.invite_btn.grid(row=5, column=2, padx=(8, 0))
-        self.invite_label = ttk.Label(f, style='Hint.TLabel')
-        self.invite_label.grid(row=6, column=0, columnspan=3, sticky='w', padx=(28, 0))
+                        command=self.refresh).grid(row=5, column=0, columnspan=3, sticky='w', pady=2)
+        inv = ttk.Frame(f)   # shown only when joining; the empty label keeps the spacing when hosting
+        inv.grid(row=6, column=0, columnspan=3, sticky='w', padx=(28, 0), pady=(2, 0))
+        self.invite_btn = ttk.Button(inv, text='Open invite…', command=self.open_invite)
+        self.invite_label = ttk.Label(inv, style='Hint.TLabel')
+        self.invite_label.pack(side='right', padx=(10, 0))
 
         ttk.Label(f, text='Options', font=('', 11, 'bold')).grid(row=7, column=0, columnspan=3, sticky='w',
                                                                  pady=(16, 0))
         self.crowd = tk.BooleanVar(value=self.cfg['crowd_fix'])
         self.graphics = tk.BooleanVar(value=self.cfg['graphics'])
-        ttk.Checkbutton(f, text='Crowd fix patch (recommended)', variable=self.crowd).grid(
+        ttk.Checkbutton(f, text='Crowd fix patch (recommended)', variable=self.crowd, command=self.refresh).grid(
             row=8, column=0, columnspan=3, sticky='w', pady=2)
         ttk.Checkbutton(f, text='Recommended graphics settings (fixes dark crowd and black boxes)',
-                        variable=self.graphics).grid(row=9, column=0, columnspan=3, sticky='w', pady=2)
+                        variable=self.graphics, command=self.refresh).grid(row=9, column=0, columnspan=3, sticky='w', pady=2)
         pic = ttk.Frame(f)
         pic.grid(row=10, column=0, columnspan=3, sticky='w', pady=(6, 0))
         self.picture = tk.StringVar(value=self.cfg['picture'])
         ttk.Label(pic, text='Resolution:').pack(side='left')
-        ttk.Radiobutton(pic, text='720p (fastest)', variable=self.picture, value='720p').pack(side='left', padx=(10, 0))
+        ttk.Radiobutton(pic, text='720p (fastest)', variable=self.picture, value='720p', command=self.refresh).pack(side='left', padx=(10, 0))
         ttk.Radiobutton(pic, text='1080p (sharper, needs a stronger GPU)', variable=self.picture,
-                        value='1080p').pack(side='left', padx=(10, 0))
+                        value='1080p', command=self.refresh).pack(side='left', padx=(10, 0))
         ttk.Label(f, text='Changes apply when you click Set up RPCS3.', style='Hint.TLabel').grid(
             row=11, column=0, columnspan=3, sticky='w', pady=(4, 0))
 
@@ -295,14 +296,14 @@ class App(tk.Tk):
 
     def refresh(self):
         hosting = self.mode.get() == 'host'
-        self.invite_btn.config(state='disabled' if hosting else 'normal')
         if hosting:
+            self.invite_btn.pack_forget()
             self.invite_label.config(text='')
-        elif self.cfg.get('invite_host'):
-            self.invite_label.config(text=f'Invite loaded: server at {self.cfg["invite_host"]}')
         else:
-            self.invite_label.config(text='No invite loaded')
-        ready = False
+            self.invite_btn.pack(side='left', before=self.invite_label)
+            self.invite_label.config(text=f'Loaded: server at {self.cfg["invite_host"]}' if self.cfg.get('invite_host')
+                                     else 'No invite loaded yet')
+        set_up = ready = False
         r = s.Rpcs3(self.rpcs3_dir.get().strip()) if self.rpcs3_dir.get().strip() else None
         if not r or r.problem():
             text = 'Pick your RPCS3 folder.' if not r else r.problem()
@@ -311,24 +312,27 @@ class App(tk.Tk):
             ca = s.installed_ca(r)
             server = s.game_config_server(r)
             where = 'your server' if server == '127.0.0.1' else server
-            rows = [(s.patches_status(r), 'Patches installed', 'Patches'),
+            crowd, graphics, picture = self.crowd.get(), self.graphics.get(), self.picture.get()
+            # each row compares RPCS3's files with the options chosen above, so a changed option shows up here
+            rows = [(s.patches_status(r, crowd), 'Patches installed' + (' (with crowd fix)' if crowd else ''),
+                     'Patches'),
+                    (s.game_config_status(r, graphics, picture), f'Game settings applied ({picture})', 'Game settings'),
                     (server is not None and server == want_ip, f'Connects to {where}', 'Server address'),
                     (ca is not None and isinstance(want_ca, bytes) and ca == want_ca, 'Server certificate trusted',
                      'Server certificate')]
-            if not any(ok for ok, _, _ in rows):
-                text = 'Not set up yet: click "Set up RPCS3".'
-            elif all(ok for ok, _, _ in rows):
-                ready = True
-                text = '✓  Ready to play\n' + '\n'.join('     ' + done for _, done, _ in rows)
-                if hosting:   # the most common first-session failure: everything set up but no server
-                    text += ('\n     Server running' if self.server_running() else
-                             '\n○  Server not running: start it in tab 2 before you launch the game')
-            else:   # e.g. a new invite was opened: say what the next Set up will change
-                text = 'Click "Set up RPCS3" to finish:\n' + '\n'.join(
-                    ('✓  ' + done) if ok else ('○  ' + todo + ': needs setup') for ok, done, todo in rows)
+            lines = [('✓  ' + done) if ok else ('○  ' + todo + ': needs Set up') for ok, done, todo in rows]
+            set_up = all(ok for ok, _, _ in rows)
+            if hosting:   # the most common first-session failure: everything set up but no server
+                lines.append('✓  Server running' if self.server_running() else '○  Server not running: start it in tab 2')
+            ready = set_up and (not hosting or self.server_running())
+            head = ('Open the invite file your friend sent you, then click "Set up RPCS3":' if want_ip is None else
+                    'Ready to play: click Launch RPCS3' if ready else
+                    'Almost there: start the server in tab 2' if set_up else
+                    'Click "Set up RPCS3" to apply:')
+            text = head + '\n' + '\n'.join(lines)
         self.status.config(text=text)
-        # point at the next step: Set up until it's done, then Launch
-        self.setup_btn.config(style='TButton' if ready else 'Accent.TButton')
+        # highlight the next step: Set up until it's done, Launch once everything is ready
+        self.setup_btn.config(style='TButton' if set_up else 'Accent.TButton')
         self.launch_btn.config(style='Accent.TButton' if ready else 'TButton')
 
     # ------------------------------------------------------------ host tab

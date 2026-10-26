@@ -202,10 +202,12 @@ def install_patches(r, crowd_fix=True):
 
 
 def patches_status(r, crowd_fix=True):
+    """True if the online patches are installed and ticked, and the crowd fix is ticked exactly when wanted."""
     cfg = load_yaml(r.patch_config).get(PPU_HASH, {})
-    want = patch_names('Version: 1.2\n\n' + PPU_HASH + ':\n' + patch_body(bundle_dir() / 'patches' / 'MLB16_online.yml'))
-    on = [n for n in want if cfg.get(n, {}).get('MLB The Show 16', {}).get(TITLE_ID, {}).get('01.10', {}).get('Enabled') == 'true']
-    return (r.patches / f'{TITLE_ID}_patch.yml').exists() and len(on) == len(want)
+    names = lambda f: patch_names('Version: 1.2\n\n' + PPU_HASH + ':\n' + patch_body(bundle_dir() / 'patches' / f))
+    on = lambda n: cfg.get(n, {}).get('MLB The Show 16', {}).get(TITLE_ID, {}).get('01.10', {}).get('Enabled') == 'true'
+    return ((r.patches / f'{TITLE_ID}_patch.yml').exists() and all(on(n) for n in names('MLB16_online.yml'))
+            and all(on(n) == crowd_fix for n in names('MLB16_crowd_fix.yml')))
 
 
 # ---------------------------------------------------------------- per-game config
@@ -225,6 +227,14 @@ def install_game_config(r, server_ip, graphics=True, picture='720p'):
         video.update(GRAPHICS)
     video['Resolution Scale'] = SCALES[picture]
     write_text(r.custom_config, dump_yaml(cfg))
+
+
+def game_config_status(r, graphics=True, picture='720p'):
+    """True if this game's config has the settings install_game_config would write with these options."""
+    cfg = load_yaml(r.custom_config)
+    core, video = cfg.get('Core', {}), cfg.get('Video', {})
+    want = {**(GRAPHICS if graphics else {}), 'Resolution Scale': SCALES[picture]}
+    return (all(core.get(k) == v for k, v in STABILITY.items()) and all(video.get(k) == v for k, v in want.items()))
 
 
 def game_config_server(r):

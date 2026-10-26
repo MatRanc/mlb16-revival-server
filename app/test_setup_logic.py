@@ -41,6 +41,7 @@ for windows in (False, True):
         s.install_patches(r, crowd_fix=False)
         crowd = s.load_yaml(r.patch_config)[s.PPU_HASH]['Crowd fix (single-draw crowd batches)']
         assert crowd['MLB The Show 16']['BCUS01089']['01.10']['Enabled'] == 'false'
+        assert s.patches_status(r, crowd_fix=False) and not s.patches_status(r, crowd_fix=True)
 
         c0 = s.load_yaml(r.custom_config)
         assert c0['Video']['Resolution Scale'] == '150'
@@ -51,11 +52,13 @@ for windows in (False, True):
         assert c['Core']['PPU Decoder'] == 'Recompiler (LLVM)' and c['Video']['Resolution Scale'] == '100'
         assert c['Core']['SPU Block Size'] == 'Safe' and c['Core']['Accurate SPU Reservations'] == 'true'
         assert c['Video']['Strict Rendering Mode'] == 'false' and c['Video']['Resolution'] == '1280x720'
+        assert s.game_config_status(r, picture='720p') and not s.game_config_status(r, picture='1080p')
         s.install_game_config(r, '100.1.2.3', graphics=False, picture='1080p')
         c = s.load_yaml(r.custom_config)
         assert c['Video']['Resolution Scale'] == '150' and c['Core']['SPU Block Size'] == 'Safe'
         assert c['Video']['Write Color Buffers'] == 'true' and c['Net']['PSN status'] == 'RPCN'
         assert s.game_config_server(r) == '100.1.2.3'
+        assert s.game_config_status(r, graphics=False, picture='1080p') and s.game_config_status(r, picture='1080p')
 
         certs = root / 'hostcerts'
         s.make_server_certs(certs)
