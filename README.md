@@ -133,9 +133,9 @@ never starts, make sure UPnP is on in both routers.
 - **A player is missing from the room:** wait up to 8 s. Still missing: leave the room and join it again.
 - **Stuck on the stadium select screen:** back out and send a new challenge. Seen once, cause unknown.
 - **Dark crowd, or a black box around the runner's lead-off view:** the graphics settings aren't on. Keep
-  "Recommended graphics settings" ticked in the launcher and run **Set up RPCS3** again.
+  "Accurate graphics" ticked in the launcher and run **Set up RPCS3** again.
 - **The game runs slow:** pick **720p** in the launcher and run **Set up RPCS3** again. Still slow: untick
-  "Recommended graphics settings" too (the crowd may look darker, but the game runs faster). Close-ups (walk-ups, mound
+  "Accurate graphics" too (the crowd may look darker, but the game runs faster). Close-ups (walk-ups, mound
   visits) running at 15 to 25 FPS are normal on mid-range CPUs: they're limited by the CPU, not by these settings.
 - **Part of the crowd flickers or disappears when the camera moves:** seen once at Comerica Park, not reproduced since.
   The game builds a new crowd layout every time a game starts, and some layouts seem to trigger it. Quit to the menu and

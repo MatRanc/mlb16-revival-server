@@ -66,13 +66,17 @@ for windows in (False, True):
         c = s.load_yaml(r.custom_config)
         assert c['Video']['Resolution Scale'] == '150' and c['Core']['SPU Block Size'] == 'Safe'
         assert c['Video']['Resolution'] == '1920x1080' and c['Video']['Anisotropic Filter Override'] == '8'
-        assert c['Video']['Write Color Buffers'] == 'true' and c['Net']['PSN status'] == 'RPCN'
+        assert c['Video']['Write Color Buffers'] == 'false' and c['Net']['PSN status'] == 'RPCN'   # unticked: RPCS3 defaults
         assert s.game_config_server(r) == '100.1.2.3'
-        assert s.game_config_status(r, graphics=False, picture='1080p') and s.game_config_status(r, picture='1080p')
+        assert s.game_config_status(r, graphics=False, picture='1080p') and not s.game_config_status(r, picture='1080p')
         s.install_game_config(r, '100.1.2.3', picture='1080p', scale=500)
         assert s.load_yaml(r.custom_config)['Video']['Resolution Scale'] == '500'
         assert s.load_yaml(r.custom_config)['Video']['MSAA'] == 'Disabled' and c['Video']['MSAA'] == 'Auto'
         assert s.game_config_status(r, picture='1080p', scale=500) and not s.game_config_status(r, picture='1080p')
+
+        r.custom_config.write_text('Video: [unclosed\n')   # a corrupt config must not make Set up fail forever
+        s.install_game_config(r, '100.1.2.3', picture='1080p')
+        assert s.game_config_status(r, picture='1080p') and Path(str(r.custom_config) + '.broken').exists()
 
         certs = root / 'hostcerts'
         s.make_server_certs(certs)

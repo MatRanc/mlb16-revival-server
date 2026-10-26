@@ -160,32 +160,33 @@ class App(tk.Tk):
         self.invite_label = ttk.Label(inv, style='Hint.TLabel')
         self.invite_label.pack(side='right', padx=(10, 0))
 
-        ttk.Label(f, text='Options', font=('', 11, 'bold')).grid(row=7, column=0, columnspan=3, sticky='w',
-                                                                 pady=(16, 0))
+        ttk.Label(f, text='Graphics', font=('', 11, 'bold')).grid(row=7, column=0, columnspan=3, sticky='w',
+                                                                  pady=(16, 0))
         self.crowd = tk.BooleanVar(value=self.cfg['crowd_fix'])
         self.graphics = tk.BooleanVar(value=self.cfg['graphics'])
         self.face = tk.BooleanVar(value=self.cfg['face_fix'])
-        fixes = ttk.Frame(f)
-        fixes.grid(row=8, column=0, columnspan=3, sticky='w', pady=2)
-        ttk.Checkbutton(fixes, text='Crowd fix patch (recommended)', variable=self.crowd,
-                        command=self.refresh).pack(side='left')
-        ttk.Checkbutton(fixes, text='Face fix patch (recommended, untick for weak GPUs)', variable=self.face,
-                        command=self.refresh).pack(side='left', padx=(16, 0))
-        ttk.Checkbutton(f, text='Recommended graphics settings (fixes dark crowd and black boxes)',
-                        variable=self.graphics, command=self.refresh).grid(row=9, column=0, columnspan=3, sticky='w', pady=2)
+        opts = ttk.Frame(f)
+        opts.grid(row=8, column=0, columnspan=3, sticky='w')
+        for text, var, hint in (('Fix crowd (no fans on the field, no missing stands)', self.crowd, None),
+                                ('Accurate graphics (fixes dark crowd and black boxes)', self.graphics,
+                                 'Untick only if the game runs slowly.'),
+                                ('Fix holes in player faces', self.face, 'Untick on weaker graphics cards.')):
+            ttk.Checkbutton(opts, text=text, variable=var, command=self.refresh).pack(anchor='w', pady=(2, 0))
+            if hint:
+                ttk.Label(opts, text=hint, style='Hint.TLabel').pack(anchor='w', padx=(28, 0))
         # Resolution and Sharpness share a grid so their controls line up
         pic = ttk.Frame(f)
-        pic.grid(row=10, column=0, columnspan=3, sticky='w', pady=(8, 0))
+        pic.grid(row=10, column=0, columnspan=3, sticky='w', pady=(10, 0))
         self.picture = tk.StringVar(value=self.cfg['picture'])
-        ttk.Label(pic, text='Resolution:').grid(row=0, column=0, sticky='w', padx=(0, 12))
+        ttk.Label(pic, text='Output').grid(row=0, column=0, sticky='w', padx=(0, 12))
         res = ttk.Frame(pic)
         res.grid(row=0, column=1, sticky='w')
-        ttk.Radiobutton(res, text='720p (fastest)', variable=self.picture, value='720p',
+        ttk.Radiobutton(res, text='720p', variable=self.picture, value='720p',
                         command=self.picture_changed).pack(side='left')
-        ttk.Radiobutton(res, text='1080p (sharper)', variable=self.picture, value='1080p',
+        ttk.Radiobutton(res, text='1080p', variable=self.picture, value='1080p',
                         command=self.picture_changed).pack(side='left', padx=(16, 0))
         self.scale = tk.IntVar(value=self.cfg.get('scale') or int(s.PICTURE[self.picture.get()]['Resolution Scale']))
-        ttk.Label(pic, text='Sharpness:').grid(row=1, column=0, sticky='w', padx=(0, 12), pady=(8, 0))
+        ttk.Label(pic, text='Sharpness').grid(row=1, column=0, sticky='w', padx=(0, 12), pady=(8, 0))
         sharp = ttk.Frame(pic)
         sharp.grid(row=1, column=1, sticky='w', pady=(8, 0))
         self.scale_slider = ttk.Scale(sharp, from_=100, to=500, length=200, value=self.scale.get(),
@@ -193,11 +194,13 @@ class App(tk.Tk):
         self.scale_slider.pack(side='left')
         self.scale_label = ttk.Label(sharp, text=f'{self.scale.get()}%', width=5)
         self.scale_label.pack(side='left', padx=(10, 0))
-        ttk.Label(f, text='Higher values need a stronger graphics card. Applied when you click Set up RPCS3.',
-                  style='Hint.TLabel').grid(row=11, column=0, columnspan=3, sticky='w', pady=(6, 0))
+        ttk.Label(pic, text='Higher sharpness needs a stronger graphics card. 1080p starts at 150%.',
+                  style='Hint.TLabel').grid(row=2, column=1, sticky='w')
+        ttk.Label(f, text='Changes apply when you click Set up RPCS3.',
+                  style='Hint.TLabel').grid(row=11, column=0, columnspan=3, sticky='w', pady=(12, 0))
 
         self.setup_btn = ttk.Button(f, text='Set up RPCS3', command=self.do_setup)
-        self.setup_btn.grid(row=12, column=0, columnspan=3, sticky='ew', pady=(20, 4), ipady=4)
+        self.setup_btn.grid(row=12, column=0, columnspan=3, sticky='ew', pady=(6, 4), ipady=4)
         self.launch_btn = ttk.Button(f, text='Launch RPCS3', command=self.launch_rpcs3)
         self.launch_btn.grid(row=13, column=0, columnspan=3, sticky='ew', ipady=4)
 
@@ -216,6 +219,8 @@ class App(tk.Tk):
         d = filedialog.askdirectory(title='RPCS3 folder', initialdir=self.rpcs3_dir.get() or str(Path.home()))
         if d:
             self.rpcs3_dir.set(d)
+            if self.cfg.pop('rpcs3_exe', None):   # a new RPCS3 folder: ask where its program is again
+                self.cfg.save()
             self.refresh()
 
     def open_rpcs3_logs(self):
@@ -243,7 +248,10 @@ class App(tk.Tk):
     def target(self):
         """(server IP, CA bytes) for this player's RPCS3, or a reason it isn't known yet."""
         if self.mode.get() == 'host':
-            return '127.0.0.1', (s.ensure_host_certs() / 'ca.pem').read_bytes()
+            try:
+                return '127.0.0.1', (s.ensure_host_certs() / 'ca.pem').read_bytes()
+            except Exception as e:   # never leave Set up or the checklist broken over this
+                return None, f"Couldn't create this computer's server certificate ({e}). Check that you can write to {s.data_dir()}."
         if not self.cfg.get('invite_host'):
             return None, 'Open the invite file your friend sent you first.'
         return self.cfg['invite_host'], self.cfg['invite_ca'].encode()
@@ -261,7 +269,7 @@ class App(tk.Tk):
                 return
             self.cfg['rpcs3_exe'] = exe
             self.cfg.save()
-            cmd = [exe]
+            cmd = s.rpcs3_command(r, exe)
         env = dict(os.environ)
         if getattr(sys, 'frozen', False):
             # the bundled app points the library search path at its own temp folder; RPCS3 must not inherit that
@@ -318,7 +326,7 @@ class App(tk.Tk):
             s.install_game_config(r, ip, graphics=self.graphics.get(), picture=self.picture.get(),
                                   scale=self.scale.get())
             s.install_ca(r, ca)
-        except OSError as e:
+        except Exception as e:   # any failure gets a message, so Set up can always be retried
             messagebox.showerror('Setup failed', "Couldn't change the files in your RPCS3 folder. Make sure RPCS3 is "
                                  f'closed and the folder is right, then try again.\n\nDetails: {e}')
             return
@@ -354,11 +362,11 @@ class App(tk.Tk):
             where = 'your server' if server == '127.0.0.1' else server
             crowd, graphics, picture, scale = self.crowd.get(), self.graphics.get(), self.picture.get(), self.scale.get()
             # each row compares RPCS3's files with the options chosen above, so a changed option shows up here
-            fixes = ' and '.join(n for n, on in (('crowd fix', crowd), ('face fix', self.face.get())) if on)
+            fixes = ', '.join(n for n, on in (('crowd', crowd), ('faces', self.face.get())) if on)
             rows = [(s.patches_status(r, crowd, self.face.get()),
-                     'Patches installed' + (f' (with {fixes})' if fixes else ''), 'Patches'),
-                    (s.game_config_status(r, graphics, picture, scale), f'Game settings applied ({picture}, {scale}%)',
-                     'Game settings'),
+                     'Game patches installed' + (f' ({fixes})' if fixes else ''), 'Game patches'),
+                    (s.game_config_status(r, graphics, picture, scale), f'Graphics applied ({picture}, {scale}%)',
+                     'Graphics'),
                     (server is not None and server == want_ip, f'Connects to {where}', 'Server address'),
                     (ca is not None and isinstance(want_ca, bytes) and ca == want_ca, 'Server certificate trusted',
                      'Server certificate')]
@@ -367,7 +375,8 @@ class App(tk.Tk):
             if hosting:   # the most common first-session failure: everything set up but no server
                 lines.append('✓  Server running' if self.server_running() else '○  Server not running: start it in tab 2')
             ready = set_up and (not hosting or self.server_running())
-            head = ('Open the invite file your friend sent you, then click "Set up RPCS3":' if want_ip is None else
+            head = (('Open the invite file your friend sent you, then click "Set up RPCS3":' if not hosting else want_ca)
+                    if want_ip is None else
                     'Ready to play: click Launch RPCS3' if ready else
                     'Almost there: start the server in tab 2' if set_up else
                     'Click "Set up RPCS3" to apply:')

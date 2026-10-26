@@ -52,7 +52,7 @@ commands is in:
 | `0x01170820` | `0x13520` (`0x25`) | `il $4,0` | `bi $lr` |
 
 Back faces are now drawn too. The depth test hides them, so the picture is the same at a small GPU cost, only for
-characters. That's why the launcher makes it a checkbox (*Face fix patch*, on by default) that people with weak GPUs
+characters. That's why the launcher makes it a checkbox (*Fix holes in player faces*, on by default) that people with weak GPUs
 can untick. Tested at 300% in gameplay and the attract demo with no freeze and no visual regressions.
 
 ## Dead ends

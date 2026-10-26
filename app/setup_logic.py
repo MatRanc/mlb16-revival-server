@@ -21,6 +21,7 @@ GRAPHICS = {
     'Strict Rendering Mode': 'false', 'Disable Vertex Cache': 'true',
     'Shader Precision': 'High',
 }
+GRAPHICS_OFF = {k: 'false' for k in GRAPHICS} | {'Shader Precision': 'High'}   # RPCS3's defaults, when unticked
 # Always set, back to RPCS3's defaults (from RPCS3's system_config.h): every CPU, SPU and RSX accuracy or timing
 # setting, so speed tweaks from a player's global config can't freeze a match. Every freeze we traced came from one:
 # SPU Block Size "Mega" with Accurate SPU Reservations off (a hang, and an error inside cellSpursRemoveWorkload), and
@@ -146,12 +147,16 @@ def rpcs3_running():
 def rpcs3_command(r, saved=None):
     """How to start RPCS3, or None if the user has to point at it (a Linux AppImage can be anywhere)."""
     if saved and Path(saved).exists():
-        return [saved]
+        return ['open', saved] if saved.endswith('.app') else [saved]   # a macOS app bundle is a folder
     if sys.platform == 'win32':
         exe = r.root / 'rpcs3.exe'
         return [str(exe)] if exe.exists() else None
     if sys.platform == 'darwin':
-        return ['open', '-a', 'RPCS3']
+        try:   # Spotlight knows where the app is; if it doesn't, ask the user instead of a silent 'open' failure
+            found = subprocess.run(['mdfind', 'kMDItemCFBundleIdentifier == "net.rpcs3.rpcs3"'], **_quiet()).stdout
+        except (OSError, subprocess.SubprocessError):
+            found = 'unknown'   # can't tell: try the normal way
+        return ['open', '-a', 'RPCS3'] if found.strip() else None
     if shutil.which('rpcs3'):
         return ['rpcs3']
     if (Path.home() / '.var' / 'app' / 'net.rpcs3.RPCS3').is_dir() and shutil.which('flatpak'):
@@ -162,10 +167,17 @@ def rpcs3_command(r, saved=None):
 # ---------------------------------------------------------------- YAML as RPCS3 writes it
 
 def load_yaml(path):
-    """Every scalar stays a string ('01.10' must not become 1.1), exactly as RPCS3 reads it."""
+    """Every scalar stays a string ('01.10' must not become 1.1), exactly as RPCS3 reads it. A file that isn't
+    valid YAML is kept next to it as .broken and read as empty, so Set up can rebuild it instead of failing forever."""
     try:
-        return yaml.load(Path(path).read_text(encoding='utf-8'), Loader=yaml.BaseLoader) or {}
+        d = yaml.load(Path(path).read_text(encoding='utf-8'), Loader=yaml.BaseLoader) or {}
+        if not isinstance(d, dict):
+            raise yaml.YAMLError('not a mapping')
+        return d
     except FileNotFoundError:
+        return {}
+    except (yaml.YAMLError, UnicodeDecodeError):
+        shutil.copyfile(path, str(path) + '.broken')
         return {}
 
 
@@ -274,8 +286,7 @@ def install_game_config(r, server_ip, graphics=True, picture='720p', scale=None)
     cfg['Log'] = {k: 'Notice' for k in cfg.get('Log', {})}
     video = cfg.setdefault('Video', {})
     video.update(VIDEO_STABILITY)
-    if graphics:
-        video.update(GRAPHICS)
+    video.update(GRAPHICS if graphics else GRAPHICS_OFF)
     video.update(PICTURE[picture], **{'Output Scaling Mode': 'Bilinear'})
     if scale:
         video['Resolution Scale'] = str(scale)
@@ -287,7 +298,7 @@ def game_config_status(r, graphics=True, picture='720p', scale=None):
     """True if this game's config has the settings install_game_config would write with these options."""
     cfg = load_yaml(r.custom_config)
     core, video = cfg.get('Core', {}), cfg.get('Video', {})
-    want = {**VIDEO_STABILITY, **(GRAPHICS if graphics else {}), **PICTURE[picture],
+    want = {**VIDEO_STABILITY, **(GRAPHICS if graphics else GRAPHICS_OFF), **PICTURE[picture],
             'Output Scaling Mode': 'Bilinear', 'Resolution Scale': str(scale or PICTURE[picture]['Resolution Scale'])}
     want['MSAA'] = msaa(want['Resolution Scale'])
     return (all(core.get(k) == v for k, v in STABILITY.items()) and all(video.get(k) == v for k, v in want.items()))

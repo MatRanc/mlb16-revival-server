@@ -13,8 +13,10 @@ or do the same for another game. The deep dives are in [`docs/`](docs/).
 
 ## Graphics settings
 
-The launcher applies these when "Recommended graphics settings" is ticked, for MLB The Show 16 only (in the game's
-custom config). By hand: right-click the game in RPCS3 → **Create Custom Configuration**, then set:
+The launcher applies these when "Accurate graphics" is ticked, for MLB The Show 16 only (in the game's
+custom config). Unticked, it sets the buffer, vertex cache and shader precision settings back to RPCS3's defaults; the
+stability settings are always applied. By hand: right-click the game in RPCS3 → **Create Custom Configuration**, then
+set:
 - **GPU:** Write Color Buffers on, Strict Rendering Mode **off**, ZCULL Accuracy *Precise*, Shader Quality *High*,
   Output Scaling *Bilinear*. Picture: Default Resolution *720p* at Resolution Scale *100%*, or for a sharper picture
   (the launcher's 1080p) Default Resolution *1080p*, Resolution Scale *150%* and Anisotropic Filter *8x*. The
@@ -37,7 +39,7 @@ RPCS3; *Atomic* logged none. Every freeze traced so far came from a setting chan
 copied from the player's global config (RPCS3's **Create Custom Configuration** copies all global values). So the
 launcher always resets every CPU, SPU and RSX accuracy or timing setting for this game to RPCS3's default (the full
 list is `STABILITY` and `VIDEO_STABILITY` in [app/setup_logic.py](app/setup_logic.py)), and sets this game's
-per-channel log levels back to Notice, even with "Recommended graphics settings" unticked. Default
+per-channel log levels back to Notice, even with "Accurate graphics" unticked. Default
 Resolution *1440×1080* is not 1440p: it's a stretched PS3 output mode, and the game still renders at 720p. The crowd itself needs the **crowd fix patch** from
 [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), which the launcher also installs.
 
@@ -89,7 +91,7 @@ off from 200% up: RPCS3 reads the game's multisampled image without filtering, a
 anyway. Found in RenderDoc: the blur is the last pass of the frame, which also upscales 720p to the output resolution.
 
 **Fix holes in player faces** ([`patches/MLB16_triangle_fix.yml`](patches/MLB16_triangle_fix.yml)) is optional and on by
-default (the *Face fix patch* checkbox). With resolution scaling, faces, ears and caps showed pin-holes where the background came through. RenderDoc showed
+default (the *Fix holes in player faces* checkbox). With resolution scaling, faces, ears and caps showed pin-holes where the background came through. RenderDoc showed
 real gaps in the head meshes, all smaller than a 720p pixel: the game's SPU mesh code (Naughty Dog's ICE library,
 embedded in the EBOOT) culls triangles too thin to cover a pixel at 720p, which at 300% do cover pixels. The patch turns
 the SPU's three cull commands into returns, so every triangle is drawn and back faces are hidden by the depth test. It
