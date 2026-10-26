@@ -456,11 +456,15 @@ class App(tk.Tk):
             messagebox.showerror('Invite', 'No network address found. Are you connected to a network?')
             return
         p = filedialog.asksaveasfilename(title='Save invite', defaultextension='.mlb16invite',
-                                         initialfile='mlb16-invite.mlb16invite',
+                                         initialdir=Path.home(), initialfile='mlb16-invite.mlb16invite',
                                          filetypes=[('MLB16 invite', '*.mlb16invite')])
         if p:
             ca = (s.ensure_host_certs() / 'ca.pem').read_bytes()
-            Path(p).write_text(s.make_invite(ip, ca), encoding='utf-8')
+            try:
+                Path(p).write_text(s.make_invite(ip, ca), encoding='utf-8')
+            except OSError as e:
+                messagebox.showerror('Invite', f"Couldn't save there:\n{e}\n\nPick another folder.")
+                return
             self.write_log(f'invite saved for {ip}: {p}')
             messagebox.showinfo('Invite saved', f'Saved to:\n{p}\n\nSend this file to your friend (Discord, email, '
                                 'anything). They open it in their launcher with "Open invite…", then click Set up RPCS3.')

@@ -128,6 +128,9 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
   that long to appear. As far as we can tell, the game only downloads the list when you join and on that timer.
 - Some player-list columns may show blank or zero: the column names are guesses, since the UI scripts are compiled.
 - Endpoints the server doesn't know get an empty "OK" reply. That's enough for everything Game Rooms needs so far.
+- Home Run Derby online works through the same lobby and relay as Game Rooms. Not implemented yet: saving results,
+  for matches (`/mlb_games/create.xml`) and Derby stats (`/hrd_stats/update_stats.xml`, read back with
+  `/hrd_stats/my_stats.xml`). All three get the empty "OK".
 - With Strict Rendering Mode on (no longer set), an M1 Mac ran about 35 FPS in a match. Not measured without it yet.
 - RPCS3 itself can still freeze mid-game. Seen: an SPU-related hang and error on Windows with non-default SPU
   settings, and on Linux a frozen picture or an RSX crash after "FIFO error: possible desync event" errors, which
