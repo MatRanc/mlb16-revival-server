@@ -104,6 +104,21 @@ the SPU's three cull commands into returns, so every triangle is drawn and back 
 is not an RPCS3 setting (SPU XFloat Accuracy changes nothing). The GPU then also draws characters' back faces, so on a
 weak graphics card, untick it. [docs/ice-mesh.md](docs/ice-mesh.md) has the details.
 
+**White faces on coaches and generic players** (not a patch, a cache). Real players have finished face textures on the
+disc. Generic characters (base coaches, created players) get a face built from layers ("CAP" faces): the game renders
+the layers into `FaceColorOutput` / `FaceBumpOutput` render targets (created in `0x82fb18`), compresses each mip to DXT1
+into `face-color` / `face-normal` (`0x82ff40`, which hands the render target to the DXT compressor), and writes the result
+into a 300 MB cache, `dev_hdd0/game/BCUS01089_R/USRDIR/HeadFaceCacheFile` (`0x830194`; the builder loop is `0x84fdbc`,
+called from `0x8507d0` for both rosters and five coaches per team). Later loads read the faces from that file and never
+rebuild them. Reading the render target back needs Write Color Buffers: without it RPCS3 never writes the rendered face
+to memory, the compressor gets a blank image, and that blank face is saved for good. In game it shows as flat grey
+skin and bump maps under the face shader, so the face looks white and plastic. Turning settings on afterwards
+(Accurate SPU DMA, Handle RSX Memory Tiling, Strict Texture Flushing all tested) changes nothing, because the face
+comes from the file. Deleting the file fixes it: the game recreates it (`sys_fs_open` fails with ENOENT, then the file
+is created and written) and rebuilds the faces correctly. Same symptom as RPCS3 issue
+[#14731](https://github.com/RPCS3/rpcs3/issues/14731), where the faces look right on the Edit Player screen (drawn
+live) but not in games (loaded from the cache).
+
 ## How it works
 
 ```
