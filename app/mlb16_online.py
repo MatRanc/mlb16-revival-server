@@ -168,18 +168,31 @@ class App(tk.Tk):
             row=8, column=0, columnspan=3, sticky='w', pady=2)
         ttk.Checkbutton(f, text='Recommended graphics settings (fixes dark crowd and black boxes)',
                         variable=self.graphics, command=self.refresh).grid(row=9, column=0, columnspan=3, sticky='w', pady=2)
+        # Resolution and Sharpness share a grid so their controls line up
         pic = ttk.Frame(f)
-        pic.grid(row=10, column=0, columnspan=3, sticky='w', pady=(6, 0))
+        pic.grid(row=10, column=0, columnspan=3, sticky='w', pady=(8, 0))
         self.picture = tk.StringVar(value=self.cfg['picture'])
-        ttk.Label(pic, text='Resolution:').pack(side='left')
-        ttk.Radiobutton(pic, text='720p (fastest)', variable=self.picture, value='720p', command=self.refresh).pack(side='left', padx=(10, 0))
-        ttk.Radiobutton(pic, text='1080p (sharper, needs a stronger GPU)', variable=self.picture,
-                        value='1080p', command=self.refresh).pack(side='left', padx=(10, 0))
-        ttk.Label(f, text='Changes apply when you click Set up RPCS3.', style='Hint.TLabel').grid(
-            row=11, column=0, columnspan=3, sticky='w', pady=(4, 0))
+        ttk.Label(pic, text='Resolution:').grid(row=0, column=0, sticky='w', padx=(0, 12))
+        res = ttk.Frame(pic)
+        res.grid(row=0, column=1, sticky='w')
+        ttk.Radiobutton(res, text='720p (fastest)', variable=self.picture, value='720p',
+                        command=self.picture_changed).pack(side='left')
+        ttk.Radiobutton(res, text='1080p (sharper)', variable=self.picture, value='1080p',
+                        command=self.picture_changed).pack(side='left', padx=(16, 0))
+        self.scale = tk.IntVar(value=self.cfg.get('scale') or int(s.PICTURE[self.picture.get()]['Resolution Scale']))
+        ttk.Label(pic, text='Sharpness:').grid(row=1, column=0, sticky='w', padx=(0, 12), pady=(8, 0))
+        sharp = ttk.Frame(pic)
+        sharp.grid(row=1, column=1, sticky='w', pady=(8, 0))
+        self.scale_slider = ttk.Scale(sharp, from_=100, to=500, length=200, value=self.scale.get(),
+                                      command=self.scale_moved)
+        self.scale_slider.pack(side='left')
+        self.scale_label = ttk.Label(sharp, text=f'{self.scale.get()}%', width=5)
+        self.scale_label.pack(side='left', padx=(10, 0))
+        ttk.Label(f, text='Higher values need a stronger graphics card. Applied when you click Set up RPCS3.',
+                  style='Hint.TLabel').grid(row=11, column=0, columnspan=3, sticky='w', pady=(6, 0))
 
         self.setup_btn = ttk.Button(f, text='Set up RPCS3', command=self.do_setup)
-        self.setup_btn.grid(row=12, column=0, columnspan=3, sticky='ew', pady=(14, 4), ipady=4)
+        self.setup_btn.grid(row=12, column=0, columnspan=3, sticky='ew', pady=(20, 4), ipady=4)
         self.launch_btn = ttk.Button(f, text='Launch RPCS3', command=self.launch_rpcs3)
         self.launch_btn.grid(row=13, column=0, columnspan=3, sticky='ew', ipady=4)
 
@@ -264,6 +277,23 @@ class App(tk.Tk):
             self.cfg.save()
             messagebox.showerror('Launch RPCS3', f'Could not start RPCS3:\n{e}')
 
+    def picture_changed(self):
+        self.set_scale(int(s.PICTURE[self.picture.get()]['Resolution Scale']))
+        self.refresh()
+
+    def scale_moved(self, value):
+        if self.set_scale(round(float(value) / 50) * 50):   # the slider fires on every pixel of a drag
+            self.refresh()
+
+    def set_scale(self, v):
+        """Snaps the slider to 50% steps. True if the value changed."""
+        if self.scale_slider.get() != v:   # set() runs the slider's command again
+            self.scale_slider.set(v)
+        self.scale_label.config(text=f'{v}%')
+        changed = v != self.scale.get()
+        self.scale.set(v)
+        return changed
+
     def do_setup(self):
         r = s.Rpcs3(self.rpcs3_dir.get().strip())
         problem = r.problem()
@@ -280,14 +310,15 @@ class App(tk.Tk):
             return
         try:
             s.install_patches(r, crowd_fix=self.crowd.get())
-            s.install_game_config(r, ip, graphics=self.graphics.get(), picture=self.picture.get())
+            s.install_game_config(r, ip, graphics=self.graphics.get(), picture=self.picture.get(),
+                                  scale=self.scale.get())
             s.install_ca(r, ca)
         except OSError as e:
             messagebox.showerror('Setup failed', "Couldn't change the files in your RPCS3 folder. Make sure RPCS3 is "
                                  f'closed and the folder is right, then try again.\n\nDetails: {e}')
             return
         self.cfg.update(rpcs3_dir=str(r.root), mode=self.mode.get(), crowd_fix=self.crowd.get(),
-                        graphics=self.graphics.get(), picture=self.picture.get())
+                        graphics=self.graphics.get(), picture=self.picture.get(), scale=self.scale.get())
         self.cfg.save()
         self.refresh()
         messagebox.showinfo('Done', 'RPCS3 is set up.\n\n'
@@ -316,11 +347,12 @@ class App(tk.Tk):
             ca = s.installed_ca(r)
             server = s.game_config_server(r)
             where = 'your server' if server == '127.0.0.1' else server
-            crowd, graphics, picture = self.crowd.get(), self.graphics.get(), self.picture.get()
+            crowd, graphics, picture, scale = self.crowd.get(), self.graphics.get(), self.picture.get(), self.scale.get()
             # each row compares RPCS3's files with the options chosen above, so a changed option shows up here
             rows = [(s.patches_status(r, crowd), 'Patches installed' + (' (with crowd fix)' if crowd else ''),
                      'Patches'),
-                    (s.game_config_status(r, graphics, picture), f'Game settings applied ({picture})', 'Game settings'),
+                    (s.game_config_status(r, graphics, picture, scale), f'Game settings applied ({picture}, {scale}%)',
+                     'Game settings'),
                     (server is not None and server == want_ip, f'Connects to {where}', 'Server address'),
                     (ca is not None and isinstance(want_ca, bytes) and ca == want_ca, 'Server certificate trusted',
                      'Server certificate')]

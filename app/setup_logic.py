@@ -246,7 +246,7 @@ def patches_status(r, crowd_fix=True):
 
 # ---------------------------------------------------------------- per-game config
 
-def install_game_config(r, server_ip, graphics=True, picture='720p'):
+def install_game_config(r, server_ip, graphics=True, picture='720p', scale=None):
     """Merges our settings into RPCS3's custom config for this game (created if missing). RPCS3 applies it on top
     of the global config, so only these keys change, and only for MLB The Show 16."""
     cfg = load_yaml(r.custom_config)
@@ -264,15 +264,17 @@ def install_game_config(r, server_ip, graphics=True, picture='720p'):
     if graphics:
         video.update(GRAPHICS)
     video.update(PICTURE[picture], **{'Output Scaling Mode': 'Bilinear'})
+    if scale:
+        video['Resolution Scale'] = str(scale)
     write_text(r.custom_config, dump_yaml(cfg))
 
 
-def game_config_status(r, graphics=True, picture='720p'):
+def game_config_status(r, graphics=True, picture='720p', scale=None):
     """True if this game's config has the settings install_game_config would write with these options."""
     cfg = load_yaml(r.custom_config)
     core, video = cfg.get('Core', {}), cfg.get('Video', {})
     want = {**VIDEO_STABILITY, **(GRAPHICS if graphics else {}), **PICTURE[picture],
-            'Output Scaling Mode': 'Bilinear'}
+            'Output Scaling Mode': 'Bilinear', **({'Resolution Scale': str(scale)} if scale else {})}
     return (all(core.get(k) == v for k, v in STABILITY.items()) and all(video.get(k) == v for k, v in want.items()))
 
 

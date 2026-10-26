@@ -74,7 +74,8 @@ The launcher isn't signed, so the first launch needs one extra click:
 
 **The host:**
 1. **Set up RPCS3** tab → "I'm hosting" → **Set up RPCS3**.
-   Under **Resolution**, 720p runs fastest; 1080p is sharper if your graphics card can handle it.
+   Under **Resolution**, 720p runs fastest; 1080p is sharper if your graphics card can handle it. **Sharpness**
+   renders bigger and shrinks it to fit, for smoother edges: it only costs GPU power (500% ran fine on an RTX 3060 Ti).
 2. **Run the server** tab → **Start server**. Allow network access if your firewall asks. Keep the launcher open while you
    play: closing it stops the server.
 3. **Save invite file…** and send it to your friend (Discord, email, anything: it holds your address and your

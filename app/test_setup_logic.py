@@ -65,6 +65,9 @@ for windows in (False, True):
         assert c['Video']['Write Color Buffers'] == 'true' and c['Net']['PSN status'] == 'RPCN'
         assert s.game_config_server(r) == '100.1.2.3'
         assert s.game_config_status(r, graphics=False, picture='1080p') and s.game_config_status(r, picture='1080p')
+        s.install_game_config(r, '100.1.2.3', picture='1080p', scale=500)
+        assert s.load_yaml(r.custom_config)['Video']['Resolution Scale'] == '500'
+        assert s.game_config_status(r, picture='1080p', scale=500) and not s.game_config_status(r, picture='1080p')
 
         certs = root / 'hostcerts'
         s.make_server_certs(certs)

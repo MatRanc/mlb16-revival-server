@@ -17,7 +17,9 @@ The launcher applies these when "Recommended graphics settings" is ticked, for M
 custom config). By hand: right-click the game in RPCS3 → **Create Custom Configuration**, then set:
 - **GPU:** Write Color Buffers on, Strict Rendering Mode **off**, ZCULL Accuracy *Precise*, Shader Quality *High*,
   Output Scaling *Bilinear*. Picture: Default Resolution *720p* at Resolution Scale *100%*, or for a sharper picture
-  (the launcher's 1080p) Default Resolution *1080p*, Resolution Scale *150%* and Anisotropic Filter *8x*.
+  (the launcher's 1080p) Default Resolution *1080p*, Resolution Scale *150%* and Anisotropic Filter *8x*. The
+  launcher's Sharpness slider sets Resolution Scale (100 to 500%); 800% froze the game on an RTX 3060 Ti, likely out
+  of video memory.
 - **Advanced:** Read Color Buffers, Read Depth Buffer, Write Depth Buffer, Disable Vertex Cache on; **Accurate SPU
   Reservations on** (the default)
 - **CPU:** SPU Block Size **Safe**, RSX FIFO Accuracy **Atomic** and SPU XFloat Accuracy *Approximate XFloat* (the
