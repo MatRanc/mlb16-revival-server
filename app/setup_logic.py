@@ -12,19 +12,23 @@ TELEMETRY_HOST = 'mlb16.api.wwsga.me'
 APP_ID = 'mlb16-online'
 
 # Per-game settings. Graphics are the tested ones from the README; Net points the game at the server.
-# Write Color Buffers is what fixes the dark crowd and black PiP boxes. Strict Rendering Mode isn't needed for it, costs
-# performance (Macs), and blocks resolution scaling, so it's turned off. The game renders at 720p; sharper = scale.
+# Write Color Buffers is what fixes the dark crowd and black PiP boxes. Strict Rendering Mode fixes Safeco Field at
+# night with overcast skies, which renders far too bright without it. (It only greys out Resolution Scale in RPCS3's
+# settings window; the scale still applies. It does make RPCS3 ignore Anisotropic Filter Override.)
 GRAPHICS = {
     'Write Color Buffers': 'true', 'Read Color Buffers': 'true',
     'Write Depth Buffer': 'true', 'Read Depth Buffer': 'true',
-    'Strict Rendering Mode': 'false', 'Disable Vertex Cache': 'true',
+    'Strict Rendering Mode': 'true', 'Disable Vertex Cache': 'true',
     'Shader Precision': 'High', 'Accurate ZCULL stats': 'true', 'Relaxed ZCULL Sync': 'false',
-    'Resolution': '1280x720',
 }
 # Always set: two matches froze with SPU Block Size "Mega" and Accurate SPU Reservations off (a hang, and an RPCS3
 # error inside cellSpursRemoveWorkload). These are RPCS3's defaults.
 STABILITY = {'SPU Block Size': 'Safe', 'Accurate SPU Reservations': 'true'}
-SCALES = {'720p': '100', '1080p': '150'}   # Resolution Scale: 1280x720 x 150% = 1920x1080
+# The game's own output resolution, then RPCS3's internal scale on top of it
+PICTURE = {
+    '720p': {'Resolution': '1280x720', 'Resolution Scale': '100', 'Anisotropic Filter Override': '0'},
+    '1080p': {'Resolution': '1920x1080', 'Resolution Scale': '150', 'Anisotropic Filter Override': '8'},
+}
 
 
 def bundle_dir():
@@ -225,7 +229,7 @@ def install_game_config(r, server_ip, graphics=True, picture='720p'):
     video = cfg.setdefault('Video', {})
     if graphics:
         video.update(GRAPHICS)
-    video['Resolution Scale'] = SCALES[picture]
+    video.update(PICTURE[picture], **{'Output Scaling Mode': 'Bilinear'})
     write_text(r.custom_config, dump_yaml(cfg))
 
 
@@ -233,7 +237,7 @@ def game_config_status(r, graphics=True, picture='720p'):
     """True if this game's config has the settings install_game_config would write with these options."""
     cfg = load_yaml(r.custom_config)
     core, video = cfg.get('Core', {}), cfg.get('Video', {})
-    want = {**(GRAPHICS if graphics else {}), 'Resolution Scale': SCALES[picture]}
+    want = {**(GRAPHICS if graphics else {}), **PICTURE[picture], 'Output Scaling Mode': 'Bilinear'}
     return (all(core.get(k) == v for k, v in STABILITY.items()) and all(video.get(k) == v for k, v in want.items()))
 
 

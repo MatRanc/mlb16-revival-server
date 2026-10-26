@@ -51,11 +51,13 @@ for windows in (False, True):
         c = s.load_yaml(r.custom_config)
         assert c['Core']['PPU Decoder'] == 'Recompiler (LLVM)' and c['Video']['Resolution Scale'] == '100'
         assert c['Core']['SPU Block Size'] == 'Safe' and c['Core']['Accurate SPU Reservations'] == 'true'
-        assert c['Video']['Strict Rendering Mode'] == 'false' and c['Video']['Resolution'] == '1280x720'
+        assert c['Video']['Strict Rendering Mode'] == 'true' and c['Video']['Resolution'] == '1280x720'
+        assert c['Video']['Output Scaling Mode'] == 'Bilinear' and c['Video']['Anisotropic Filter Override'] == '0'
         assert s.game_config_status(r, picture='720p') and not s.game_config_status(r, picture='1080p')
         s.install_game_config(r, '100.1.2.3', graphics=False, picture='1080p')
         c = s.load_yaml(r.custom_config)
         assert c['Video']['Resolution Scale'] == '150' and c['Core']['SPU Block Size'] == 'Safe'
+        assert c['Video']['Resolution'] == '1920x1080' and c['Video']['Anisotropic Filter Override'] == '8'
         assert c['Video']['Write Color Buffers'] == 'true' and c['Net']['PSN status'] == 'RPCN'
         assert s.game_config_server(r) == '100.1.2.3'
         assert s.game_config_status(r, graphics=False, picture='1080p') and s.game_config_status(r, picture='1080p')

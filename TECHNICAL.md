@@ -15,24 +15,24 @@ or do the same for another game. The deep dives are in [`docs/`](docs/).
 
 The launcher applies these when "Recommended graphics settings" is ticked, for MLB The Show 16 only (in the game's
 custom config). By hand: right-click the game in RPCS3 → **Create Custom Configuration**, then set:
-- **GPU:** Write Color Buffers on, Strict Rendering Mode **off**, Default Resolution *720p*, ZCULL Accuracy *Precise*,
-  Shader Quality *High*. For a sharper picture, Resolution Scale *150%* (1080p); it's only available with Strict
-  Rendering Mode off.
+- **GPU:** Write Color Buffers on, Strict Rendering Mode **on**, ZCULL Accuracy *Precise*, Shader Quality *High*,
+  Output Scaling *Bilinear*. Picture: Default Resolution *720p* at Resolution Scale *100%*, or for a sharper picture
+  (the launcher's 1080p) Default Resolution *1080p*, Resolution Scale *150%* and Anisotropic Filter *8x*. RPCS3 greys
+  out the scale and filter boxes when Strict Rendering Mode is on, so set them first; the scale still applies, but the
+  filter is ignored.
 - **Advanced:** Read Color Buffers, Read Depth Buffer, Write Depth Buffer, Disable Vertex Cache on; **Accurate SPU
   Reservations on** (the default)
 - **CPU:** SPU Block Size **Safe** and SPU XFloat Accuracy *Approximate XFloat* (the defaults)
 
 Write Color Buffers is the one that fixes the dark crowd and the black background in picture-in-picture windows (like
-the runner's lead-off). Strict Rendering Mode isn't needed for it and costs performance, so it's off.
+the runner's lead-off). Strict Rendering Mode fixes Safeco Field at night with overcast skies, which is far too bright
+without it. It costs some performance, mostly on Macs.
 
 The CPU settings matter for stability: two online matches froze on a player who had SPU Block Size *Mega* and
 Accurate SPU Reservations off (with 1440×1080 and 200% scale) (one silent hang, and one RPCS3 error inside `cellSpursRemoveWorkload`). The launcher
 always sets both back to the defaults for this game, even with "Recommended graphics settings" unticked. Default
 Resolution *1440×1080* is not 1440p: it's a stretched PS3 output mode, and the game still renders at 720p. The crowd itself needs the **crowd fix patch** from
 [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), which the launcher also installs.
-
-The screenshots below were taken before Strict Rendering Mode was dropped from the recommendation; everything else
-in them still applies.
 
 <table>
   <tr>
@@ -93,8 +93,7 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
   that long to appear. As far as we can tell, the game only downloads the list when you join and on that timer.
 - Some player-list columns may show blank or zero: the column names are guesses, since the UI scripts are compiled.
 - Endpoints the server doesn't know get an empty "OK" reply. That's enough for everything Game Rooms needs so far.
-- With the first recommended settings (Strict Rendering Mode on), an M1 Mac ran about 35 FPS in a match. Strict
-  Rendering is now off, which should help; not measured on the Mac yet.
+- With Strict Rendering Mode on, an M1 Mac ran about 35 FPS in a match.
 - RPCS3 itself can still freeze mid-game (seen: a graphics error on Linux, an SPU-related hang and error on Windows
   with non-default SPU settings). When one player's game freezes, the other's waits for it and freezes too.
 

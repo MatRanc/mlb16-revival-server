@@ -29,6 +29,7 @@ game patches that bring back **Game Rooms**: join a room, see each other, chat, 
 ## What you need
 
 Every player needs:
+- **MLB16 Online Launcher** (this project's app): see [Setup](#setup).
 - **RPCS3**: [rpcs3.net](https://rpcs3.net/download), on Windows, Linux or macOS.
 - **PS3 system firmware**: download `PS3UPDAT.PUP` from Sony's
   [PS3 system software page](https://www.playstation.com/en-us/support/hardware/ps3/system-software/), then install it
