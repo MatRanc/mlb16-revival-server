@@ -128,7 +128,7 @@ class App(tk.Tk):
         nb.pack(fill='both', expand=True, padx=12, pady=12)
         nb.add(self.setup_tab(nb), text='  1. Set up RPCS3  ')
         nb.add(self.host_tab(nb), text='  2. Run the server (host only)  ')
-        nb.bind('<<NotebookTabChanged>>', lambda e: (self.show_addresses(), self.refresh()))   # Tailscale started later
+        nb.bind('<<NotebookTabChanged>>', lambda e: self.refresh())
         self.protocol('WM_DELETE_WINDOW', self.quit_app)
         self.refresh()
         self.after(200, self.pump)
@@ -430,13 +430,17 @@ class App(tk.Tk):
         return f
 
     def show_addresses(self):
+        self.after(2000, self.show_addresses)   # cheap check, so Tailscale opened or closed later shows up on its own
         lan, ts = s.lan_ip(), s.tailscale_ip()
+        if (lan, ts) == getattr(self, 'shown_addresses', None):
+            return
+        self.shown_addresses = (lan, ts)
         self.ts_ip = ts
         for w in self.where_btns.winfo_children():
             w.destroy()
         choices = [(lan, f'Same home network ({lan})' if lan else 'Same home network (no network found)'),
                    (ts, f'Somewhere else, over Tailscale ({ts})' if ts else
-                    'Somewhere else: install Tailscale first (see the Setup guide)')]
+                    'Somewhere else: install or open Tailscale first (see the Setup guide)')]
         for i, (ip, text) in enumerate(choices):
             ttk.Radiobutton(self.where_btns, text=text, variable=self.where, value=ip or f'none{i}',   # unselectable
                             state='normal' if ip else 'disabled',
