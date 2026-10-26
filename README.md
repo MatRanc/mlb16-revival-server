@@ -188,6 +188,9 @@ Fair question for any download from a stranger on the internet. What this projec
   home-network and Tailscale addresses, and RPCS3 doesn't record the other player's address, even in a match over
   the internet (checked in logs from both). The server log holds RPCN usernames, but not the sign-in ticket or the
   console ID, which it leaves out. RPCS3's log shows folder paths, which can include your computer's user name.
+- **Update check:** when it starts, the launcher asks GitHub for the latest release (one request, which GitHub sees
+  like any download) and shows an "Update available" link if there's a newer one. It never downloads or installs
+  anything by itself.
 
 ## Technical details
 

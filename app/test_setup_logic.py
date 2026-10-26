@@ -102,6 +102,8 @@ for windows in (False, True):
                 pass
 
 fp = Path.home() / '.var' / 'app' / 'net.rpcs3.RPCS3'
+assert s.is_newer('v0.4.10', 'v0.4.9') and not s.is_newer('v0.4.9', 'v0.4.10') and not s.is_newer('v0.4.9', 'v0.4.9')
+assert not s.is_newer('v0.5.0', 'dev') and not s.is_newer(None, 'v0.4.9') and not s.is_newer('nightly', 'v0.4.9')
 assert s.Rpcs3(fp / 'config' / 'rpcs3', windows_layout=False).logs == fp / 'cache' / 'rpcs3' or s.sys.platform == 'darwin'
 
 print('setup_logic: all checks passed')

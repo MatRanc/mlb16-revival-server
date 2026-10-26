@@ -1,6 +1,6 @@
 """Everything the app does to RPCS3 and the host, without the window: patches, per-game config, certificates,
 server certificates, invites. Kept separate so it can be tested headless (see test_setup_logic.py)."""
-import datetime, functools, ipaddress, json, os, re, shutil, socket, subprocess, sys
+import datetime, functools, ipaddress, json, os, re, shutil, socket, subprocess, sys, urllib.request
 from pathlib import Path
 
 import yaml
@@ -431,6 +431,30 @@ def tailscale_ip():
         s.close()
     # same address as the normal route means Tailscale isn't carrying it (off, or a carrier's 100.x network)
     return ip if ipaddress.ip_address(ip) in ipaddress.ip_network('100.64.0.0/10') and ip != lan_ip() else None
+
+
+def latest_release():
+    """Tag of the newest GitHub release, or None if it can't be fetched."""
+    url = 'https://api.github.com/repos/MatRanc/mlb16-revival-server/releases/latest'
+    try:
+        data = urllib.request.urlopen(urllib.request.Request(url, headers={'User-Agent': APP_ID}), timeout=5).read()
+    except Exception:   # a bundled Python may lack CA certificates on macOS/Linux; curl uses the system's
+        try:
+            data = subprocess.run(['curl', '-fsSL', '-m', '5', url], **_quiet()).stdout
+        except Exception:
+            return None
+    try:
+        return str(json.loads(data)['tag_name'])
+    except Exception:
+        return None
+
+
+def is_newer(tag, current):
+    """True if release tag 'v1.2.10' is newer than 'v1.2.9'. False for anything that isn't a version ('dev')."""
+    version = re.compile(r'v?\d+(\.\d+)*')
+    if not (tag and version.fullmatch(tag) and version.fullmatch(current)):
+        return False
+    return tuple(map(int, re.findall(r'\d+', tag))) > tuple(map(int, re.findall(r'\d+', current)))
 
 
 def make_invite(host_ip, ca_pem):

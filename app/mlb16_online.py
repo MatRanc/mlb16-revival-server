@@ -106,6 +106,9 @@ class App(tk.Tk):
         except OSError:
             version = 'dev'
         self.title(f'MLB16 Online Launcher {version}')
+        self.version, self.latest = version, None
+        if version != 'dev':   # one request to GitHub at start; pump shows the result
+            threading.Thread(target=lambda: setattr(self, 'latest', s.latest_release()), daemon=True).start()
         try:
             self.iconphoto(True, tk.PhotoImage(file=str(s.bundle_dir() / 'app' / 'icon.png')))
         except tk.TclError:
@@ -215,7 +218,7 @@ class App(tk.Tk):
 
         self.status = ttk.Label(f, justify='left', wraplength=560)
         self.status.grid(row=14, column=0, columnspan=3, sticky='w', pady=(16, 0))
-        links = ttk.Frame(f)
+        links = self.links = ttk.Frame(f)
         links.grid(row=15, column=0, columnspan=3, sticky='w', pady=(12, 0))
         link(links, 'Setup guide', REPO + '#setup').pack(side='left')
         link(links, 'Troubleshooting', REPO + '#troubleshooting').pack(side='left', padx=(16, 0))
@@ -532,6 +535,12 @@ class App(tk.Tk):
                     self.write_log(text)
         except queue.Empty:
             pass
+        if self.latest:   # set once by the update check thread
+            if s.is_newer(self.latest, self.version):
+                new = link(self.links, f'Update available: {self.latest}', REPO + '/releases/latest')
+                new.config(style='Running.TLabel')   # green, so it stands out from the help links
+                new.pack(side='left', padx=(16, 0))
+            self.latest = None
         self.after(200, self.pump)
 
     def write_log(self, text, tag=None):
