@@ -82,7 +82,9 @@ are gone, so the "Skip live roster download" patch reports success instead, and 
   - `delivery` is `gtd` or `opt`.
   - Messages from the server carry `sender`/`senderID`.
 - **Core layer `989fls`**, messages from the client:
-  - `Hello`: the server answers with a `Hello`.
+  - `Hello`: the server answers with a `Hello`. It carries the `ticket_session_uuid` from the login reply as
+    `session_uuid`; our server only gives the connection a player's slot when that matches, so a client can't claim
+    another player's name.
   - `Keepalive`: every 15 s. The server sends its own about every 10 s.
   - `PluginRegister Layer=… ServiceClass=PluginData|PluginLogic|PluginDataAndLogic` / `PluginUnregister`
   - `disconnect`

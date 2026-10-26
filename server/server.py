@@ -40,6 +40,9 @@ def ok(inner):
             '<message>Successful completion</message></status><response>' + inner + '</response></result>')
 
 
+PRIVATE = re.compile(r'\b(ticket|console_id)=[^&]*')   # sign-in ticket and console MAC: kept out of the log
+
+
 def esc(s):
     return str(s).replace('&', '&amp;').replace('"', '&quot;').replace('<', '&lt;')
 
@@ -214,7 +217,7 @@ class Handler(BaseHTTPRequestHandler):
         path, _, qs = self.path.partition('?')
         session = self.headers.get('X-Analytics-Session-UUID', '')
         log(event='request', port=self.server.server_port, method=self.command, path=self.path,
-            headers=dict(self.headers), body=body, tls=getattr(self.connection, 'version', lambda: None)())
+            headers=dict(self.headers), body=PRIVATE.sub(r'\1=(removed)', body), tls=getattr(self.connection, 'version', lambda: None)())
         route = ROUTES.get(path)
         if route:
             req = dict(form={k: v[0] for k, v in urllib.parse.parse_qs(body).items()},
@@ -361,7 +364,12 @@ def fls_client(sock, addr):
             if attrs.get('target', 'srvr') in ('plyr', 'zone') and c.player:
                 relay(c, xml, attrs)
             elif kind == 'Hello':
-                p = BY_ID.get(int(body.get('player_id', 0))) or player_for(body.get('username', '?'))
+                # only the session_uuid handed out at login (fls_data ticket_session_uuid) gets that player's slot
+                with STATE:
+                    p = next((q for q in BY_ID.values() if q.session_uuid == body.get('session_uuid')), None)
+                if not p:
+                    log(event='fls_rejected', src=c.who(), username=body.get('username'))
+                    break
                 c.player = p
                 with STATE:
                     old, p.fls = p.fls, c

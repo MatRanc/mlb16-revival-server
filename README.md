@@ -158,7 +158,8 @@ never starts, make sure UPnP is on in both routers.
 **Something else?** Before restarting anything, save the RPCS3 log (`RPCS3.log`: **Open RPCS3 logs** in the
 launcher's setup tab opens its folder; it's in the RPCS3 folder on Windows, `~/Library/Caches/rpcs3` on macOS,
 `~/.cache/rpcs3` on Linux) and the host's server log (`requests.jsonl` in the folder that **Open logs folder** opens,
-in the **Run the server** tab), then open an issue.
+in the **Run the server** tab), then open an issue. Neither log holds anyone's internet address or password (see
+[Safety and security](#safety-and-security)).
 
 ## Safety and security
 
@@ -183,6 +184,10 @@ Fair question for any download from a stranger on the internet. What this projec
 - **The host shares as little as possible.** With Tailscale, the host shares one computer, not their network, and
   can stop sharing at any time. The server only speaks the game's protocol: logins, the room list, chat and
   challenges.
+- **The logs are safe to share.** Neither log contains anyone's internet (public) IP address: the server only sees
+  home-network and Tailscale addresses, and RPCS3 doesn't record the other player's address, even in a match over
+  the internet (checked in logs from both). The server log holds RPCN usernames, but not the sign-in ticket or the
+  console ID, which it leaves out. RPCS3's log shows folder paths, which can include your computer's user name.
 
 ## Technical details
 
