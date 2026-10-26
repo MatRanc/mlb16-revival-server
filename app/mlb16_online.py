@@ -101,7 +101,11 @@ class App(tk.Tk):
         super().__init__(className='mlb16-online')   # Tk turns this into the window class "Mlb16-online"
         if sys.platform.startswith('linux'):
             linux_launcher()
-        self.title('MLB16 Online Launcher')
+        try:   # written by the release build; running from source has none
+            version = (s.bundle_dir() / 'app' / 'version.txt').read_text().strip()
+        except OSError:
+            version = 'dev'
+        self.title(f'MLB16 Online Launcher {version}')
         try:
             self.iconphoto(True, tk.PhotoImage(file=str(s.bundle_dir() / 'app' / 'icon.png')))
         except tk.TclError:

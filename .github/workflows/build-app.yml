@@ -31,10 +31,11 @@ jobs:
           python-version: '3.12'
       - run: pip install -r requirements.txt pyinstaller==6.22.3 pillow  # pillow: turns icon.png into .ico/.icns
       - run: python test_setup_logic.py
+      - run: echo "${{ github.ref_name }}" > version.txt   # shown in the launcher's title bar
       - run: >
           pyinstaller --noconfirm --clean --onefile --windowed --name MLB16-Online-Launcher
           --add-data "../patches/MLB16_online.yml:patches" --add-data "../patches/MLB16_crowd_fix.yml:patches" --add-data "../patches/MLB16_dof_fix.yml:patches" --add-data "../patches/MLB16_triangle_fix.yml:patches"
-          --add-data "../server/server.py:server" --add-data "icon.png:app" --icon icon.png
+          --add-data "../server/server.py:server" --add-data "icon.png:app" --add-data "version.txt:app" --icon icon.png
           --collect-data sv_ttk mlb16_online.py
       - name: Package (Windows)
         if: runner.os == 'Windows'

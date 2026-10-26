@@ -19,3 +19,5 @@ app/build/
 app/dist/
 *.mlb16invite
 *.spec
+# written by the release build
+app/version.txt
