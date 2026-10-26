@@ -22,15 +22,18 @@ custom config). By hand: right-click the game in RPCS3 → **Create Custom Confi
   filter is ignored.
 - **Advanced:** Read Color Buffers, Read Depth Buffer, Write Depth Buffer, Disable Vertex Cache on; **Accurate SPU
   Reservations on** (the default)
-- **CPU:** SPU Block Size **Safe** and SPU XFloat Accuracy *Approximate XFloat* (the defaults)
+- **CPU:** SPU Block Size **Safe**, RSX FIFO Accuracy **Atomic** and SPU XFloat Accuracy *Approximate XFloat* (the
+  defaults)
 
 Write Color Buffers is the one that fixes the dark crowd and the black background in picture-in-picture windows (like
 the runner's lead-off). Strict Rendering Mode fixes Safeco Field at night with overcast skies, which is far too bright
 without it. It costs some performance, mostly on Macs.
 
 The CPU settings matter for stability: two online matches froze on a player who had SPU Block Size *Mega* and
-Accurate SPU Reservations off (with 1440×1080 and 200% scale) (one silent hang, and one RPCS3 error inside `cellSpursRemoveWorkload`). The launcher
-always sets both back to the defaults for this game, even with "Recommended graphics settings" unticked. Default
+Accurate SPU Reservations off (with 1440×1080 and 200% scale) (one silent hang, and one RPCS3 error inside `cellSpursRemoveWorkload`).
+On Linux, RSX FIFO Accuracy *Fast* logged "FIFO error: possible desync event" every few seconds, then froze or crashed
+RPCS3; *Atomic* logged none. The launcher
+always sets all three back to the defaults for this game, even with "Recommended graphics settings" unticked. Default
 Resolution *1440×1080* is not 1440p: it's a stretched PS3 output mode, and the game still renders at 720p. The crowd itself needs the **crowd fix patch** from
 [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), which the launcher also installs.
 

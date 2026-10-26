@@ -50,7 +50,7 @@ for windows in (False, True):
         s.install_game_config(r, '100.1.2.3', picture='720p')
         c = s.load_yaml(r.custom_config)
         assert c['Core']['PPU Decoder'] == 'Recompiler (LLVM)' and c['Video']['Resolution Scale'] == '100'
-        assert c['Core']['SPU Block Size'] == 'Safe' and c['Core']['Accurate SPU Reservations'] == 'true'
+        assert c['Core']['SPU Block Size'] == 'Safe' and c['Core']['Accurate SPU Reservations'] == 'true' and c['Core']['RSX FIFO Fetch Accuracy'] == 'Atomic'
         assert c['Video']['Strict Rendering Mode'] == 'true' and c['Video']['Resolution'] == '1280x720'
         assert c['Video']['Output Scaling Mode'] == 'Bilinear' and c['Video']['Anisotropic Filter Override'] == '0'
         assert s.game_config_status(r, picture='720p') and not s.game_config_status(r, picture='1080p')

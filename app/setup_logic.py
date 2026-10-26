@@ -22,8 +22,9 @@ GRAPHICS = {
     'Shader Precision': 'High', 'Accurate ZCULL stats': 'true', 'Relaxed ZCULL Sync': 'false',
 }
 # Always set: two matches froze with SPU Block Size "Mega" and Accurate SPU Reservations off (a hang, and an RPCS3
-# error inside cellSpursRemoveWorkload). These are RPCS3's defaults.
-STABILITY = {'SPU Block Size': 'Safe', 'Accurate SPU Reservations': 'true'}
+# error inside cellSpursRemoveWorkload). RSX FIFO Fetch Accuracy "Fast" gave "FIFO error: possible desync event"
+# every few seconds and then a fatal RSX error; none with "Atomic". These are RPCS3's defaults.
+STABILITY = {'SPU Block Size': 'Safe', 'Accurate SPU Reservations': 'true', 'RSX FIFO Fetch Accuracy': 'Atomic'}
 # The game's own output resolution, then RPCS3's internal scale on top of it
 PICTURE = {
     '720p': {'Resolution': '1280x720', 'Resolution Scale': '100', 'Anisotropic Filter Override': '0'},
