@@ -7,7 +7,8 @@ What each player does once, including the host.
 You need:
 - RPCS3 (Windows, Linux or macOS)
 - the PS3 firmware, installed in RPCS3
-- your own copy of *MLB The Show 16* (disc dump BCUS01089) and the **v01.10** update (see the main README for Sony's download link)
+- your own copy of *MLB The Show 16*, disc version BCUS01089 (a decrypted ISO, a raw disc image with its `.dkey`, or a
+  folder dump; see the main README), and the **v01.10** update (the README has Sony's download link)
 
 From the host you need two things: their **IP** (LAN or Tailscale) and their **`ca.pem`**.
 
@@ -34,10 +35,13 @@ first line (`Version: 1.2`). Then open RPCS3 → **Manage → Game Patches**, ti
 - **Re-enable online menus.** Update 1.10 replaced the online entry point with an "ONLINE DISABLED" popup.
 - **Skip live roster download.** Sony's roster files are gone. Everyone keeps the built-in roster, so rosters always match.
 - **Allow game room challenges.** The game only enables challenges after a server-driven step we don't replicate yet, so the Challenge option would never appear.
-- **Fix NP ID lookup hang.** RPCS3 never finishes the game's opponent ID lookup (`sceNpLookupNpIdAsync`), so both players would hang on "Challenge accepted, waiting for a response".
+- **Fix NP ID lookup hang.** RPCS3 never finishes the game's opponent ID lookup (`sceNpLookupNpIdAsync`), so both players would hang on "Challenge accepted, waiting for a response", and the online menu would come back blank after a match.
 - **Faster game room player list.** The room refreshes its player list every 8 s instead of every 30 s.
 
-Also recommended: the crowd fix from [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes).
+Also recommended, from the same folder (the launcher installs these too): [`MLB16_crowd_fix.yml`](../patches/MLB16_crowd_fix.yml)
+(crowd), [`MLB16_dof_fix.yml`](../patches/MLB16_dof_fix.yml) (better depth of field) and
+[`MLB16_triangle_fix.yml`](../patches/MLB16_triangle_fix.yml) (holes in player faces). Paste each one's contents
+after the first file's, without its `Version: 1.2` line, and tick them too.
 
 ## 4. Trust the host's certificate
 The game only talks to servers whose certificate it trusts, so the host's certificate gets added to each of RPCS3's PS3
@@ -66,11 +70,10 @@ host's certificate is dropped.
 ## 5. Graphics settings
 Right-click the game → **Create Custom Configuration**, and set the settings listed (with screenshots) in the
 [graphics section of TECHNICAL.md](../TECHNICAL.md#graphics-settings). Without them, parts of the crowd go dark and
-picture-in-picture windows get a black background. For the crowd itself, add the crowd fix patch from
-[mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes).
+picture-in-picture windows get a black background. For the crowd itself, add the crowd fix patch (step 3).
 
 ## 6. Play
-With the host's server running: boot the game → **Game Rooms** → pick the room. Everyone in the room appears in the
+With the host's server running: boot the game → **Online → Game Rooms** → pick the **Revival Room**. Everyone in the room appears in the
 player list, and chat works. Select a player to challenge them.
 
 The first time, your computer may ask whether RPCS3 (and on the host, Python) may use the network. Allow it, on private
@@ -84,6 +87,6 @@ up, leave the room and join it again.
 - **"The Online features of MLB The Show are disabled":** PSN sign-in failed. Check that PSN status is RPCN and you're logged in.
 - **"Your connection to The Show Online has been lost" right away:** the server isn't reachable (hosts switch IP, firewall, Tailscale), or the certificate isn't installed.
 - **"Downloading live roster failed":** the skip-roster patch isn't ticked.
-- **Stuck on "Challenge accepted, waiting for a response":** the NP ID lookup patch isn't ticked on one of the machines.
+- **Stuck on "Challenge accepted, waiting for a response", or a blank online menu after a match:** the NP ID lookup patch isn't ticked on one of the machines, or it's older than version 0.2 (get the current file).
 - **Stuck on the stadium select screen:** back out and send a new challenge. Seen once, cause unknown.
 - **Dark crowd, or a black box around the runner's lead-off view:** see [Graphics settings](#5-graphics-settings).

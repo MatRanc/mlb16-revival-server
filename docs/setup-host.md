@@ -85,8 +85,8 @@ Then players use `production.mlb16.online.scea.com=<host 100.x IP>` in their hos
 ### What to send each player
 - Your IP: the LAN IP, or your Tailscale `100.x.y.z`.
 - `certs/ca.pem` (rename it to `.cer` if that's easier for them). **Never send `ca.key` or `server.key`.**
-- A link to this repo: they need [setup-player.md](setup-player.md), [`patches/MLB16_online.yml`](../patches/MLB16_online.yml),
-  and on Windows [`server/certswap.ps1`](../server/certswap.ps1).
+- A link to this repo: they need [setup-player.md](setup-player.md), the files in [`patches/`](../patches/), and on
+  Windows [`server/certswap.ps1`](../server/certswap.ps1).
 
 If something breaks, have everyone save their RPCS3 log **before restarting RPCS3**, since it overwrites the log:
 `~/.cache/rpcs3/RPCS3.log` on Linux, `~/Library/Caches/rpcs3/RPCS3.log` on macOS, and in the RPCS3 folder on Windows.

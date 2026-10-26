@@ -111,12 +111,28 @@ are gone, so the "Skip live roster download" patch reports success instead, and 
 - These steps are "challenge modules" run in order: … `GetGameID` (10500/10501) → `SetSeed` → `Natpunch` → `Join` →
   `UserSettings` → … → `Start`.
 - Before connecting, each client resolves the opponent's online ID with `sceNpLookupNpIdAsync`, then sets up
-  **NP Signaling** (`sceNpSignalingCreateCtx` / `ActivateConnection`) to get a direct connection. RPCS3 never completes
+  **NP Signaling** (`sceNpSignalingCreateCtx` / `ActivateConnection`) to get a direct connection. The match then runs
+  over PS3 UDP peer-to-peer sockets (`DGRAM-P2P`, RPCS3's port 3658), not the stream (`P2PS`) kind. RPCS3 never completes
   that lookup's transaction, so `sceNpLookupPollAsync` returns "busy" forever. The "Fix NP ID lookup hang" patch skips
-  the poll; RPCS3 has already filled in the NP ID.
+  the poll; RPCS3 has already filled in the NP ID. The game does the same lookup again when a match ends (call at
+  `0x7a994c`, poll at `0x7a99c4`); without the patch there, the online menu came back blank.
 - Clients sometimes enter the only room as id 0 (`CHATTEXT_0_0`) instead of 1. The server treats both as one room.
 
+### End of a match
+- When a match ends, each client sends `POST mlb_games/create.xml` with one form field, `game_data`: JSON with
+  `general` (`game_mode` `EXHIBITION`, `game_uuid` from `mlb_games/start`, both player and MLB team IDs,
+  `is_complete`, `is_ranked`, and `home_game_state` or `away_game_state`), `pitcher_highlights`, `game_stats`,
+  `box_score` and `game_log`. Seen states: `FINISHED` from both sides; `CONCEDE` from one side with `CONCEDE_ON` from the
+  other; `QUIT` with `QUIT_ON` the same way. An empty success is enough: both games go back to the
+  room, and the next challenge works.
+- During a match both clients call `universal_profiles/view.xml?player_id=N`. A dropped attempt showed
+  `POST league_games/cancel.xml`.
+
+### Home Run Derby
+Online Derby works with no extra server code: it uses the same rooms and FLS relay as a match. At the end each
+client sends `POST hrd_stats/update_stats.xml` (`best_round`, `home_runs`, `longest` in feet, `place`, `rounds`,
+`xp`), and the Derby menu calls `GET hrd_stats/my_stats.xml`. Both get an empty success.
+
 ## Not done yet
-- After the match connects, both clients call `POST mlb_games/create.xml`; the server gives an empty success.
-  `universal_profiles/view.xml?player_id=N` is also called. A dropped attempt showed `POST league_games/cancel.xml`.
-- Not done: end-of-game result reporting, and checking these replies' expected contents.
+- Saving results: match results (`mlb_games/create.xml`) and Derby stats are acknowledged but not stored, and the
+  replies' expected contents aren't checked.

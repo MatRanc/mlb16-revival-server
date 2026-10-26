@@ -134,7 +134,8 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
 - With Strict Rendering Mode on (no longer set), an M1 Mac ran about 35 FPS in a match. Not measured without it yet.
 - RPCS3 itself can still freeze mid-game. Seen: an SPU-related hang and error on Windows with non-default SPU
   settings, and on Linux a frozen picture or an RSX crash after "FIFO error: possible desync event" errors, which
-  went away with RSX FIFO Accuracy *Atomic*. The launcher now resets all of these to RPCS3's defaults. When one player's game freezes, the
+  went away with RSX FIFO Accuracy *Atomic*. Once, on an M1 Mac, "RSX: Fault in uninterruptible code!" while a game
+  loaded, which RPCS3 recovered from. The launcher now resets all of these to RPCS3's defaults. When one player's game freezes, the
   other's waits for it and freezes too.
 - Crowd flicker: once, at Comerica Park, about half the crowd flickered as the camera moved. The game builds the crowd
   when a game starts (`PS3Crowd_BuildVertexBuffer` in the crowd fix write-up), so every game gets a new layout, and the
@@ -176,6 +177,15 @@ What the launcher changes in RPCS3: `patches/BCUS01089_patch.yml` (its own file)
 PS3 root certificates in `dev_flash/data/cert` (each one becomes original + the host's CA; the originals are kept in
 `cert.orig`). Its own files (settings, certificates, logs) live in `%APPDATA%\mlb16-online`,
 `~/Library/Application Support/mlb16-online` or `~/.config/mlb16-online`.
+
+- **Addresses on tab 2:** the home network address is the one the OS would use to reach the internet, and the
+  Tailscale address is the one it would use to reach Tailscale's `100.100.100.100`, counted only if it's in
+  `100.64.0.0/10` and differs from the home one (otherwise Tailscale is off, or the network itself uses 100.x
+  addresses). Both come from a UDP `connect()`, which sends nothing. The launcher doesn't run the Tailscale CLI: on
+  macOS that's the Tailscale app itself, which opened on every tab switch. Tab 2 re-checks every 2 s, so starting or
+  stopping Tailscale shows up without a restart. With a Tailscale exit node, both checks see the Tailscale address
+  and the Tailscale choice is hidden: turn the exit node off to host.
+- **Version:** the release build writes the tag to `app/version.txt`, and the title bar shows it (`dev` from source).
 
 ## Repo layout
 

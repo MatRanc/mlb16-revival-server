@@ -9,7 +9,7 @@ Status:
 - **seen**: the game called it during testing; it gets an empty success reply
 - blank: not seen yet, also gets an empty success reply
 
-347 services in 97 groups: 16 real, 15 seen.
+347 services in 97 groups: 16 real, 18 seen.
 
 ## announcement
 
@@ -263,10 +263,10 @@ Status:
 
 | service | path | method | ssl | status |
 |---|---|---|---|---|
-| `hrd.post_stats` | `hrd_stats/update_stats.xml` | POST | yes |  |
+| `hrd.post_stats` | `hrd_stats/update_stats.xml` | POST | yes | seen |
 | `hrd.view_stats` | `hrd_stats/view_stats.xml` | GET |  |  |
 | `hrd.view_stats_friends` | `hrd_stats/view_stats_friends.xml` | POST |  |  |
-| `hrd.my_stats` | `hrd_stats/my_stats.xml` | GET |  |  |
+| `hrd.my_stats` | `hrd_stats/my_stats.xml` | GET |  | seen |
 
 ## high_priority_news_updates
 
@@ -654,7 +654,7 @@ Status:
 
 | service | path | method | ssl | status |
 |---|---|---|---|---|
-| `mlb_game.create` | `mlb_games/create.xml` | POST | yes |  |
+| `mlb_game.create` | `mlb_games/create.xml` | POST | yes | seen |
 | `mlb_game.start` | `mlb_games/start.xml` | POST | yes | **real** |
 | `mlb_game.view` | `mlb_games/view.xml` | GET |  | seen |
 | `mlb_game.view_details` | `mlb_games/view_details.xml` | GET |  |  |
