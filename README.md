@@ -123,7 +123,8 @@ never starts, make sure UPnP is on in both routers.
 - **Dark crowd, or a black box around the runner's lead-off view:** the graphics settings aren't on. Keep
   "Recommended graphics settings" ticked in the launcher and run **Set up RPCS3** again.
 - **The game runs slow:** pick **720p** in the launcher and run **Set up RPCS3** again. Still slow: untick
-  "Recommended graphics settings" too (the crowd may look darker, but the game runs faster).
+  "Recommended graphics settings" too (the crowd may look darker, but the game runs faster). Close-ups (walk-ups, mound
+  visits) running at 15 to 25 FPS are normal on mid-range CPUs: they're limited by the CPU, not by these settings.
 - **The match freezes for both players:** one player's RPCS3 stopped, and the other game is waiting for it. Close
   both games and start again. If it keeps happening, run **Set up RPCS3** again (it resets the settings that froze
   matches in testing), and keep your RPCS3 log: it says what went wrong.

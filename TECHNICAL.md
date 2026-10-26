@@ -97,8 +97,15 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
 - Some player-list columns may show blank or zero: the column names are guesses, since the UI scripts are compiled.
 - Endpoints the server doesn't know get an empty "OK" reply. That's enough for everything Game Rooms needs so far.
 - With Strict Rendering Mode on, an M1 Mac ran about 35 FPS in a match.
-- RPCS3 itself can still freeze mid-game (seen: a graphics error on Linux, an SPU-related hang and error on Windows
-  with non-default SPU settings). When one player's game freezes, the other's waits for it and freezes too.
+- RPCS3 itself can still freeze mid-game. Seen: an SPU-related hang and error on Windows with non-default SPU
+  settings, and on Linux a frozen picture or an RSX crash after "FIFO error: possible desync event" errors, which
+  went away with RSX FIFO Accuracy *Atomic*. The launcher now sets all of these. When one player's game freezes, the
+  other's waits for it and freezes too.
+- Close-ups (walk-ups, the manager in the dugout, mound visits) are CPU-bound. On a Ryzen 5 2600X at 720p: about 60
+  FPS fielding, 35 batting, 24 on the pitching view, 15 to 20 in close-ups. Tested without effect: Strict Rendering
+  Mode off (+1 to 2 FPS), FIFO accuracy, Max SPURS Threads 4, SPU loop detection. RPCS3's profiler showed the main
+  game thread waiting most of the time and the work spread over 25+ SPU programs, with no single hotspot worth
+  patching. A faster CPU is the fix.
 
 ## Building and development
 
