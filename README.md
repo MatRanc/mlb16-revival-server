@@ -48,8 +48,8 @@ Every player needs:
   with **File → Install Firmware**.
 - **Your own copy of the game, disc version (BCUS01089)**. Any of these works:
   - a **decrypted ISO** (recommended): add it with **File → Add ISO Games**;
-  - a raw 1:1 disc image with your disc's key next to it (same name, ending in `.dkey`): also **File → Add ISO Games**;
-  - a folder dump made on your own PS3 (for example with multiMAN or ManaGunZ): add it with **File → Add Games**.
+  - a raw 1:1 disc image with your disc's key next to it (same name, ending in `.dkey`): also File → Add ISO Games;
+  - a folder dump made on your own PS3 (for example with multiMAN or ManaGunZ): add it with File → Add Games.
 - **The v01.10 update**. Available from Sony's own update servers. Install it with **File → Install Packages/Raps/Edats**:
   [UP9000-BCUS01089_00-MLB16THESHOWBDPA-A0110-V0100-PE.pkg](http://b0.ww.np.dl.playstation.net/tppkg/np/BCUS01089/BCUS01089_T10/07a5f28c76691db4/UP9000-BCUS01089_00-MLB16THESHOWBDPA-A0110-V0100-PE.pkg)
 - **A free RPCN account** (RPCS3's stand-in for PSN): in RPCS3, **Configuration → RPCN → Create Account**, then
