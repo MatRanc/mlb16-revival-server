@@ -46,10 +46,11 @@ Every player needs:
 - **PS3 system firmware**: download `PS3UPDAT.PUP` from Sony's
   [PS3 system software page](https://www.playstation.com/en-us/support/hardware/ps3/system-software/), then install it
   with **File → Install Firmware**.
-- **Your own copy of the game, disc version (BCUS01089)**, as a decrypted dump. Dumping the disc on your own PS3 (for
-  example with multiMAN or ManaGunZ) gives you one directly. A raw 1:1 disc image has to be decrypted first with your
-  disc's key (for example with PS3Dec).
-- **The v01.10 update**, from Sony's own update servers. Install it with **File → Install Packages/Raps/Edats**:
+- **Your own copy of the game, disc version (BCUS01089)**. Any of these works:
+  - a **decrypted ISO** (recommended): add it with **File → Add ISO Games**;
+  - a raw 1:1 disc image with your disc's key next to it (same name, ending in `.dkey`): also **File → Add ISO Games**;
+  - a folder dump made on your own PS3 (for example with multiMAN or ManaGunZ): add it with **File → Add Games**.
+- **The v01.10 update**. Available from Sony's own update servers. Install it with **File → Install Packages/Raps/Edats**:
   [UP9000-BCUS01089_00-MLB16THESHOWBDPA-A0110-V0100-PE.pkg](http://b0.ww.np.dl.playstation.net/tppkg/np/BCUS01089/BCUS01089_T10/07a5f28c76691db4/UP9000-BCUS01089_00-MLB16THESHOWBDPA-A0110-V0100-PE.pkg)
 - **A free RPCN account** (RPCS3's stand-in for PSN): in RPCS3, **Configuration → RPCN → Create Account**, then
   confirm it with the token from the email. Each player needs their own, and has to be logged in to it.
