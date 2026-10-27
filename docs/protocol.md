@@ -134,6 +134,49 @@ Online Derby works with no extra server code: it uses the same rooms and FLS rel
 client sends `POST hrd_stats/update_stats.xml` (`best_round`, `home_runs`, `longest` in feet, `place`, `rounds`,
 `xp`), and the Derby menu calls `GET hrd_stats/my_stats.xml`. Both get an empty success.
 
+## Telemetry
+
+The game posts analytics to `mlb16.api.wwsga.me` (`POST /games/<uuid>/telemetry`, HTTPS on 443) as JSON:
+`{"events":[{"header":{…},"data":{"event_type":…}}]}`. Our server answers `{}` and keeps the request in the host's
+`requests.jsonl`; nothing is forwarded anywhere. Port 443 is optional and the game works without it.
+
+Every event's header carries `user_id` (the PSN/RPCN name), `client_ipaddress` (the console's local address),
+`session_id`, `client_timezone`, `client_timestamp` and `title_id`. The event types, from the EBOOT's strings (the
+field names sit next to each event name) and from our logs (marked *seen*):
+
+**Standard telemetry library** (strings at `0xfbc9xx`, event start `0x78acf0`):
+
+| event | fields |
+|---|---|
+| `BootStart` (seen) | `build_version`, `disc_id`, `is_trial`, `issuer_id`, `np_communication_id`, `title_name` |
+| `UserProfile` (seen) | `np_online_id`, `age`, `restrict_chat`, `restrict_ugm` |
+| `HardwareProfile` (seen) | `Video_Width`, `Video_Height`, `Video_Mode`, `Resolution`, `capable_3d` |
+| `NetworkProfile` (seen) | `connection_type`, `wifi`, `mac_address` |
+| `MenuScreen` (seen) | `menu_screen`, `referrer`, `referrer_menu`, `time_on_screen` |
+| `GameStart`, `GameEnd` (seen) | `game_id`, `mode`, `online`, `stadium_id`, `player_count`, `duration_secs`, … |
+| `CurrencyAcquired` (seen), `CurrencySpent` | `currency_type` (Stubs), `amount`, `source` / `sink`, `prior_currency`, `new_currency` |
+| `StoreStart`, `StoreEnd` (seen), `ItemDetailView`, `CartResult` | `store_session_id`, `sku`, `result_code`, `duration_secs`, `did_purchase` |
+| `CommercePurchaseProduct`, `CommerceConsumeEntitlement` | `item_name`, `item_cost` |
+| `FriendProfile` | `friend_list`, `block_list` |
+| `SocialInteraction` | `target_np_account_id`, `target_np_account_name`, `interaction_type` |
+| `TrophyAchieve` | `trophy_id`, `trophy_type`, `is_first_time` |
+
+**The Show's own events:**
+
+| event | fields |
+|---|---|
+| `ScreenVisit` (seen, `0xb5780`) | `username`, `screen_name`, `screen_time`, `game_mode`, `resolution` |
+| `GameOptions` (seen) | `game_mode`, `play_mode`, `game_options`, `user_settings`, `is_online`, perks, training mode |
+| `GameResult` (seen) | teams, scores, `end_type`, `local_player_win`, team and user ratings, `game_time` |
+| `ModeOptions`, `Stadium`, `Faction_Level`, `Preloaded_Throw` (all seen) | mode settings, offered vs picked stadium, level, throwing controls |
+| `AudioProfile` (seen) | HDMI/optical, encoder, channels, sample rate |
+| `AudioInGameInfoExit`, `PresentationInfoExit`, `OsdInGameInfoExit` (seen) | `GAME_UUID` and a submit count |
+| `MyArenaTeamComposition` | `player_ids`, `series_ids`, `matchup_stars` (Diamond Dynasty lineup) |
+
+`ScreenVisit` and `MenuScreen` are most of the traffic: about 420 events in one evening of play, one per screen
+visited. The friends list, social and purchase events never appeared in our logs (no PSN friends, no store purchases
+on RPCN), but the game has them.
+
 ## Not done yet
 - Saving results: match results (`mlb_games/create.xml`) and Derby stats are acknowledged but not stored, and the
   replies' expected contents aren't checked.
