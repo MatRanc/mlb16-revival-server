@@ -170,6 +170,15 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
   the fan in the row ahead. Fans are flat pictures facing the camera, picked by viewing angle, and the crowd is drawn
   with depth testing, so it's likely the switch between pictures rather than a wrong draw order. Possibly the same on a
   PS3; not chased (captures `fanorder_1/2`, not in the repo).
+- Brighter dugout cutscenes with Accurate graphics on: in the pre-game dugout shot, players look evenly lit instead of
+  shaded under the roof (captures `dugout_dark/bright`, not in the repo). The game measures its lighting from small
+  GPU renders that it reads back on the CPU: `ToneMapSample` (exposure), `QuickAmbientSky` and `HarmonicsSample`
+  (light from the sky), created in `0x4f0380`; the per-frame lighting values are set in `0x4f2198`. Without Write Color
+  Buffers RPCS3 never writes those renders to memory, so the game reads stale, dark data; with it on, it gets the real
+  values. The players' shader and other inputs are identical in both captures; a small 8x8 lighting texture the game
+  uploads each frame is 2 to 3 times brighter. So the brighter look is most likely what the game does on a PS3 too.
+  The only knobs are global (ambient strength, exposure limits), so darkening the dugout would darken every scene.
+  Not patched; worth revisiting only with PS3 footage to compare.
 - Players in the dugout flickered once, on a quick camera pan to the dugout after a foul ball, possibly with one white
   head for a moment. They're full 3D models, so it's probably not the crowd issue above. No capture yet: next time,
   take a RenderDoc capture during that pan.
