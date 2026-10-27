@@ -169,8 +169,10 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
 - Crowd behind the dugout, while orbiting the replay camera: for a frame, 3 or 4 fans' legs or chairs show in front of
   the fan in the row ahead. Fans are flat pictures facing the camera, picked by viewing angle, and the crowd is drawn
   with depth testing, so it's likely the switch between pictures rather than a wrong draw order. Possibly the same on a
-  PS3; not chased (captures `fanorder_1/2`, not in the repo). Separately, players in the dugout once flickered on a quick
-  pan after a foul ball, with maybe a white head; no capture yet.
+  PS3; not chased (captures `fanorder_1/2`, not in the repo).
+- Players in the dugout flickered once, on a quick camera pan to the dugout after a foul ball, possibly with one white
+  head for a moment. They're full 3D models, so it's probably not the crowd issue above. No capture yet: next time,
+  take a RenderDoc capture during that pan.
 - Close-ups (walk-ups, the manager in the dugout, mound visits) are CPU-bound. On a Ryzen 5 2600X at 720p: about 60
   FPS fielding, 35 batting, 24 on the pitching view, 15 to 20 in close-ups. Tested without much effect: Strict Rendering
   Mode off (+1 to 2 FPS), FIFO accuracy, Max SPURS Threads 4, SPU loop detection. RPCS3's profiler showed the main
