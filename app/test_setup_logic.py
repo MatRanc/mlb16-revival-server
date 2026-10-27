@@ -69,7 +69,13 @@ for windows in (False, True):
         assert c['Video']['Write Color Buffers'] == 'false' and c['Net']['PSN status'] == 'RPCN'   # unticked: RPCS3 defaults
         assert s.game_config_server(r) == '100.1.2.3'
         assert s.game_config_status(r, graphics=False, picture='1080p') and not s.game_config_status(r, picture='1080p')
-        s.install_game_config(r, '100.1.2.3', picture='1080p', scale=500)
+        r.face_cache.parent.mkdir(parents=True, exist_ok=True)
+        r.face_cache.write_text('faces saved without Write Color Buffers')
+        s.install_game_config(r, '100.1.2.3', picture='1080p', scale=500)   # turns Write Color Buffers back on
+        assert not r.face_cache.exists() and r.face_cache.with_name('HeadFaceCacheFile.old').exists()
+        r.face_cache.write_text('rebuilt faces')
+        s.install_game_config(r, '100.1.2.3', picture='1080p', scale=500)   # already on: the rebuilt cache stays
+        assert r.face_cache.read_text() == 'rebuilt faces'
         assert s.load_yaml(r.custom_config)['Video']['Resolution Scale'] == '500'
         assert s.load_yaml(r.custom_config)['Video']['MSAA'] == 'Disabled' and c['Video']['MSAA'] == 'Auto'
         assert s.game_config_status(r, picture='1080p', scale=500) and not s.game_config_status(r, picture='1080p')

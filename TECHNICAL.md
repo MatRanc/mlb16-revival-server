@@ -115,7 +115,8 @@ to memory, the compressor gets a blank image, and that blank face is saved for g
 skin and bump maps under the face shader, so the face looks white and plastic. Turning settings on afterwards
 (Accurate SPU DMA, Handle RSX Memory Tiling, Strict Texture Flushing all tested) changes nothing, because the face
 comes from the file. Deleting the file fixes it: the game recreates it (`sys_fs_open` fails with ENOENT, then the file
-is created and written) and rebuilds the faces correctly. Same symptom as RPCS3 issue
+is created and written) and rebuilds the faces correctly. So whenever Set up turns Write Color Buffers on (first setup,
+or re-ticking Accurate graphics), it renames the file to `HeadFaceCacheFile.old` once. Same symptom as RPCS3 issue
 [#14731](https://github.com/RPCS3/rpcs3/issues/14731), where the faces look right on the Edit Player screen (drawn
 live) but not in games (loaded from the cache).
 
@@ -209,7 +210,8 @@ tkinter may be a separate package: `sudo dnf install python3-tkinter` (Fedora), 
 What the launcher changes in RPCS3: `patches/BCUS01089_patch.yml` (its own file), the patches' entries in
 `patch_config.yml`, the game's custom config (`custom_configs/config_BCUS01089.yml`: network and graphics), and the
 PS3 root certificates in `dev_flash/data/cert` (each one becomes original + the host's CA; the originals are kept in
-`cert.orig`). Its own files (settings, certificates, logs) live in `%APPDATA%\mlb16-online`,
+`cert.orig`). When it turns Write Color Buffers on, it also renames the game's face cache
+(`dev_hdd0/game/BCUS01089_R/USRDIR/HeadFaceCacheFile` → `.old`) so blank generated faces get rebuilt. Its own files (settings, certificates, logs) live in `%APPDATA%\mlb16-online`,
 `~/Library/Application Support/mlb16-online` or `~/.config/mlb16-online`.
 
 - **Addresses on tab 2:** the home network address is the one the OS would use to reach the internet, and the

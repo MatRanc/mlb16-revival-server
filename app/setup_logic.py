@@ -99,6 +99,8 @@ class Rpcs3:
         self.custom_config = cfg / 'custom_configs' / f'config_{TITLE_ID}.yml'
         self.cert = base / 'dev_flash' / 'data' / 'cert'
         self.cert_backup = base / 'dev_flash' / 'data' / 'cert.orig'
+        # shortcut: assumes dev_hdd0 at its default place (a custom vfs.yml path is missed; then nothing is renamed)
+        self.face_cache = base / 'dev_hdd0' / 'game' / f'{TITLE_ID}_R' / 'USRDIR' / 'HeadFaceCacheFile'
         # RPCS3.log: next to the configs on Windows, in the user cache folder elsewhere
         if windows_layout:
             self.logs = base
@@ -288,6 +290,10 @@ def install_game_config(r, server_ip, graphics=True, picture='720p', scale=None)
     # RPCS3's settings window re-saves this file.
     cfg['Log'] = {k: 'Notice' for k in cfg.get('Log', {})}
     video = cfg.setdefault('Video', {})
+    if graphics and video.get('Write Color Buffers') != 'true' and r.face_cache.exists():
+        # Generated faces (coaches, created players) saved while Write Color Buffers was off are blank (white in game)
+        # and the game never rebuilds them; moving the cache aside makes it rebuild them once, correctly.
+        r.face_cache.replace(r.face_cache.with_name(r.face_cache.name + '.old'))
     video.update(VIDEO_STABILITY)
     video.update(GRAPHICS if graphics else GRAPHICS_OFF)
     video.update(PICTURE[picture], **{'Output Scaling Mode': 'Bilinear'})

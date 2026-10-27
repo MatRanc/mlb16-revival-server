@@ -181,7 +181,7 @@ class App(tk.Tk):
         opts.grid(row=8, column=0, columnspan=3, sticky='w')
         for text, var, hint in (('Fix crowd (no fans on the field, no missing stands)', self.crowd, None),
                                 ('Accurate graphics (fixes dark crowd and black boxes)', self.graphics,
-                                 'Untick only if the game runs slowly.'),
+                                 'Keep on: without it the crowd goes dark and coaches get white faces.'),
                                 ('Fix holes in player faces', self.face, 'Untick on weaker graphics cards.')):
             ttk.Checkbutton(opts, text=text, variable=var, command=self.refresh).pack(anchor='w', pady=(2, 0))
             if hint:
