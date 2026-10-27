@@ -61,7 +61,7 @@ One player also hosts the server, usually on the PC they play on. The launcher d
 
 Tested on:
 - Ryzen 5 2600X, 32 GB DDR4, RTX 3060 Ti: Fedora 44 and Windows 11 (same PC, dual boot)
-- MacBook Air M1, 16 GB, latest macOS
+- MacBook Air M1, 16 GB, macOS 27
 - RPCS3 v0.0.43-20397 (Windows, macOS) and v0.0.43-20394 (Fedora). Newer builds will very likely work too.
 
 The patches are made for the disc version's v01.10 EBOOT. The digital version (NPUA81353) has a different EBOOT and
