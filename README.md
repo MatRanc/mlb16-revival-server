@@ -10,7 +10,7 @@ game patches that bring back **Game Rooms**: join a room, see each other, chat, 
 > **Status: it works!** First online 1v1 game played on October 25, 2026 (Linux PC vs M1 Mac, same home network),
 > then Windows 11 vs M1 Mac the same day, through a full inning and a concede, and then over the internet (home
 > Wi-Fi vs a phone hotspot, through Tailscale), set up entirely with the launcher.
-> It's still early: expect rough edges, and please report what you find.
+> Since then, several full 9-inning games have been played, mostly without issues. Please report anything you find.
 
 | | |
 |---|---|
@@ -23,7 +23,7 @@ game patches that bring back **Game Rooms**: join a room, see each other, chat, 
 | ✅ | Conceding: the other player accepts, and both games go back to the room |
 | ✅ | **Online Home Run Derby**: both players join the same random lobby and play (tested Linux PC vs M1 Mac) |
 | ✅ | **MLB16 Online Launcher**: set up RPCS3 and host or join with an invite file, tested on Fedora, Windows 11 and macOS |
-| ❓ | Reliability: one early attempt dropped before the game started, one got stuck on stadium select, and RPCS3 once crashed mid-game with a graphics error |
+| ✅ | Reliability: several full 9-inning games played, mostly issue-free (earlier testing had one drop before a game, one stuck on stadium select, and one RPCS3 graphics crash, the last traced to settings the launcher now resets) |
 | ❓ | Saving results and stats after a game or Derby |
 | ❌ | Other online modes (Diamond Dynasty, Online Rated, Franchise…): out of scope for now |
 
