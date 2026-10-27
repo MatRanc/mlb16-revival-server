@@ -166,6 +166,11 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
   layout without waiting for it, take one RenderDoc capture of a wide shot and run that repo's `tools/rd_crowd_scan.py`
   on it: it reports crowd batches reading bad data (two recent captures: about 5,100 fans, none bad). Workaround: start
   a new game.
+- Crowd behind the dugout, while orbiting the replay camera: for a frame, 3 or 4 fans' legs or chairs show in front of
+  the fan in the row ahead. Fans are flat pictures facing the camera, picked by viewing angle, and the crowd is drawn
+  with depth testing, so it's likely the switch between pictures rather than a wrong draw order. Possibly the same on a
+  PS3; not chased (captures `fanorder_1/2`, not in the repo). Separately, players in the dugout once flickered on a quick
+  pan after a foul ball, with maybe a white head; no capture yet.
 - Close-ups (walk-ups, the manager in the dugout, mound visits) are CPU-bound. On a Ryzen 5 2600X at 720p: about 60
   FPS fielding, 35 batting, 24 on the pitching view, 15 to 20 in close-ups. Tested without much effect: Strict Rendering
   Mode off (+1 to 2 FPS), FIFO accuracy, Max SPURS Threads 4, SPU loop detection. RPCS3's profiler showed the main
