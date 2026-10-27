@@ -17,14 +17,25 @@ The launcher applies these when "Accurate graphics" is ticked, for MLB The Show 
 custom config). Unticked, it sets the buffer, vertex cache and shader precision settings back to RPCS3's defaults; the
 stability settings are always applied. By hand: right-click the game in RPCS3 → **Create Custom Configuration**, then
 set:
-- **GPU:** Write Color Buffers on, Strict Rendering Mode **off**, ZCULL Accuracy *Precise*, Shader Quality *High*,
-  Output Scaling *Bilinear*. Picture: Default Resolution *720p* at Resolution Scale *100%*, or for a sharper picture
-  (the launcher's 1080p) Default Resolution *1080p*, Resolution Scale *150%* and Anisotropic Filter *8x*. The
-  launcher's Sharpness slider sets Resolution Scale (100 to 500%); 800% froze the game on an RTX 3060 Ti, likely out
-  of video memory.
-- **Advanced:** Read Color Buffers, Read Depth Buffer, Write Depth Buffer and Disable Vertex Cache **off** (the
-  defaults); **Accurate SPU Reservations on** and RSX FIFO Accuracy **Atomic** (the defaults)
-- **CPU:** SPU Block Size **Safe** and SPU XFloat Accuracy *Approximate XFloat* (the defaults)
+
+| Tab | Setting | Value |
+|---|---|---|
+| GPU | Write Color Buffers | **on** (the one that matters) |
+| GPU | Strict Rendering Mode | **off** |
+| GPU | ZCULL Accuracy | *Precise* |
+| GPU | Shader Quality | *High* |
+| GPU | Output Scaling | *Bilinear* |
+| GPU | Default Resolution / Resolution Scale | *720p* at *100%*, or for a sharper picture (the launcher's 1080p) *1080p* at *150%* |
+| GPU | Anisotropic Filter | *Auto* at 720p, *8x* at 1080p |
+| GPU | Anti-Aliasing (MSAA) | *Auto*, or *Disabled* from 200% Resolution Scale up |
+| Advanced | Read Color Buffers, Read Depth Buffer, Write Depth Buffer, Disable Vertex Cache | **off** (the defaults) |
+| Advanced | Accurate SPU Reservations | **on** (the default) |
+| Advanced | RSX FIFO Accuracy | **Atomic** (the default) |
+| CPU | SPU Block Size | **Safe** (the default) |
+| CPU | SPU XFloat Accuracy | *Approximate XFloat* (the default) |
+
+The launcher's Sharpness slider sets Resolution Scale (100 to 500%); 800% froze the game on an RTX 3060 Ti, likely out
+of video memory.
 
 Write Color Buffers is the one that fixes the dark crowd and the black background in picture-in-picture windows (like
 the runner's lead-off). The game also needs it to build generated faces and to measure its lighting (both below
