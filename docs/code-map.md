@@ -64,6 +64,33 @@ File offset = virtual address − `0x10000` for the data and text segments of th
 | `0x1eefb4` / `0x1ef05c` | Room join / quit callbacks. Join triggers one list download (`0xb73a8`); quit sets the current room id to 0, which is why the next join can ask for room 0. |
 | `0xb3588` | Post-game return to the online menus; also sets `obj+0x300`. |
 
+## Telemetry
+| address | what |
+|---|---|
+| `0x78acf0` | Starts a telemetry event: writes `event_type` into the JSON batch ("Telemetry has failed to post because we are over the overflow limit"). |
+| `0xb5780` | Builds the `ScreenVisit` event (username, screen name, time on screen). Field adders: `0x7199b8` (string), `0x719728` / `0x719578` (numbers). |
+
+The event list and fields are in [protocol.md](protocol.md#telemetry).
+
+## Generated faces (coaches, created players)
+| address | what |
+|---|---|
+| `0x8507d0` | Collects the generated faces for both rosters and five coaches per team, opens `HeadFaceCacheFile`, and calls the builder. |
+| `0x84fdbc` | Face builder loop: for each face, composite the layers, compress, and write the result into the cache file. |
+| `0x82fb18` | Creates the render targets `FaceColorOutput` / `FaceBumpOutput` and the DXT1 textures `face-color` / `face-normal`. |
+| `0x82ff40` | Compresses each mip of the render targets into the DXT1 textures (hands the render target to the DXT compressor). |
+| `0x830194` | Writes the compressed face into `HeadFaceCacheFile`. |
+
+Why a stale cache shows as white faces: [TECHNICAL.md](../TECHNICAL.md#the-patches).
+
+## Lighting
+| address | what |
+|---|---|
+| `0x4f0380` | Lighting setup per stadium: creates `ToneMapSample` (exposure), `QuickAmbientSky`, `HarmonicsSample` (light from the sky), the reflection textures, and loads the stadium's `UnifiedLightingEnv`. |
+| `0x4f2198` | Per-frame lighting update: time of day, weather, exposure and ambient values handed to the shaders. |
+| `0x4f1db8` | Sun position / time-of-day factors used by `0x4f2198`. |
+| `0x4f48c8` | Renders the exposure target (`TempCam RenderToneMapExposureRT`) and its mip chain (`ToneMapMipGen`). |
+
 ## Game data
 - The update's `PATCH_GD.WAD` stores `frontend/services.xml` and `frontend/servers_prod.xml` as plain text.
 - The UI scripts (for example `ol_GameRoom`) are inside `MLBPS3_GD.WAD` as compiled data.
