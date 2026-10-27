@@ -23,12 +23,12 @@ set:
   launcher's Sharpness slider sets Resolution Scale (100 to 500%); 800% froze the game on an RTX 3060 Ti, likely out
   of video memory.
 - **Advanced:** Read Color Buffers, Read Depth Buffer, Write Depth Buffer and Disable Vertex Cache **off** (the
-  defaults); **Accurate SPU Reservations on** (the default)
-- **CPU:** SPU Block Size **Safe**, RSX FIFO Accuracy **Atomic** and SPU XFloat Accuracy *Approximate XFloat* (the
-  defaults)
+  defaults); **Accurate SPU Reservations on** and RSX FIFO Accuracy **Atomic** (the defaults)
+- **CPU:** SPU Block Size **Safe** and SPU XFloat Accuracy *Approximate XFloat* (the defaults)
 
 Write Color Buffers is the one that fixes the dark crowd and the black background in picture-in-picture windows (like
-the runner's lead-off). Until v0.4.12 the launcher also turned on the other three buffer options and Disable Vertex
+the runner's lead-off). The game also needs it to build generated faces and to measure its lighting (both below
+and in Known limits). Until v0.4.12 the launcher also turned on the other three buffer options and Disable Vertex
 Cache. They fixed nothing visible, and they made RPCS3's RSX thread (which turns the game's graphics commands into GPU
 work) the bottleneck: in logs it was the busiest thread (85% of a core over a 43-minute match) while total CPU use
 stayed at 40 to 65%. With them off, at 1080p and 300% on a Ryzen 5 2600X: dugout close-ups went from 7 to 11 FPS to
@@ -48,19 +48,6 @@ list is `STABILITY` and `VIDEO_STABILITY` in [app/setup_logic.py](app/setup_logi
 per-channel log levels back to Notice, even with "Accurate graphics" unticked. Default
 Resolution *1440×1080* is not 1440p: it's a stretched PS3 output mode, and the game still renders at 720p. The crowd itself needs the **crowd fix patch** from
 [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), which the launcher also installs.
-
-<table>
-  <tr>
-    <th>GPU</th>
-    <th>Advanced</th>
-    <th>CPU</th>
-  </tr>
-  <tr>
-    <td><img src="docs/images/settings-gpu.png" alt="GPU tab settings"></td>
-    <td><img src="docs/images/settings-advanced.png" alt="Advanced tab settings"></td>
-    <td><img src="docs/images/settings-cpu.png" alt="CPU tab settings"></td>
-  </tr>
-</table>
 
 ## The patches
 
@@ -141,7 +128,10 @@ live) but not in games (loaded from the cache).
   the PS3 firmware's root certificates makes the game trust it.
 - **The server** answers the game's XML web API and runs **FLS**, its live session server (AES-encrypted XML over TCP),
   which relays room chat and challenges between players.
-- **RPCN** handles sign-in and NP Signaling, which connects the two games directly for the match.
+- **RPCN** handles sign-in and NP Signaling, which introduces the two games to each other.
+- **The match itself** goes straight between the two PCs over the regular internet (UDP port 3658), opened by NAT hole
+  punching or UPnP on the routers. Neither the server nor RPCN carries it.
+- **Tailscale** (or a home network) only lets the second player reach the host's server.
 
 The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
 
@@ -250,7 +240,7 @@ PS3 root certificates in `dev_flash/data/cert` (each one becomes original + the 
 | `patches/MLB16_online.yml` | the five RPCS3 patches |
 | `patches/MLB16_crowd_fix.yml` | the crowd fix from [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), installed by the launcher |
 | `patches/MLB16_dof_fix.yml` | better depth of field (smooth blur, no doubled background in close-ups), installed by the launcher |
-| `patches/MLB16_triangle_fix.yml` | fixes pin-holes in player faces with resolution scaling, installed by the launcher (optional) |
+| `patches/MLB16_triangle_fix.yml` | fixes pin-holes in player faces with resolution scaling, installed by the launcher (optional). This is the master copy; [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes) keeps a copy with the other RPCS3 fixes |
 | `tools/dof_patch.py` | generates `MLB16_dof_fix.yml` from your EBOOT |
 | `tools/extract_gamedata.py` | extracts `servers_prod.xml` / `services.xml` from your installed update |
 
@@ -271,8 +261,8 @@ carried over from this project:
    describes that loop for an AI agent.
 4. **Patch what can't be served.** Where the game checks something no server can answer anymore (here: the
    "ONLINE DISABLED" popup, the live roster download), a small RPCS3 patch skips it.
-5. **Peer-to-peer goes through RPCN.** Matches use the PS3's NP Signaling, which RPCN already provides, so the server
-   only has to handle the lobby.
+5. **RPCN sets up peer-to-peer.** Matches use the PS3's NP Signaling, which RPCN already provides, to connect the two
+   games directly, so the server only has to handle the lobby.
 
 Pointing an AI agent at this repo with "do this for game X" is a reasonable start: `docs/protocol.md`,
 `docs/code-map.md` and `AGENTS.md` describe what was done and how.

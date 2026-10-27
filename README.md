@@ -18,7 +18,7 @@ game patches that bring back **Game Rooms**: join a room, see each other, chat, 
 | ✅ | Game Rooms: room list, player list, chat |
 | ✅ | Challenging a player, accepting, and the pre-game handshake |
 | ✅ | Peer-to-peer connection and **playing a 1v1 game** |
-| ✅ | Playing over the internet: the server through Tailscale, the match through RPCN's direct connection (home Wi-Fi vs a phone hotspot) |
+| ✅ | Playing over the internet: the server through Tailscale, the match through RPCN's direct connection (two separate home networks, and home Wi-Fi vs a phone hotspot) |
 | ✅ | Windows: server and game on Windows 11, playing against a Mac |
 | ✅ | Conceding: the other player accepts, and both games go back to the room |
 | ✅ | **Online Home Run Derby**: both players join the same random lobby and play (tested Linux PC vs M1 Mac) |
@@ -139,7 +139,7 @@ Discord, your browser and the match itself keep using your normal internet conne
 tunneling to set up. (The one exception is a Tailscale "exit node", which is off unless you turn it on.)
 
 The match connects directly between the two games (RPCN sets that up). If a challenge is accepted but the match
-never starts, make sure UPnP is on in both routers.
+never starts, make sure UPnP is on in both routers (Set up already turns it on in RPCS3).
 
 ## Troubleshooting
 
@@ -202,7 +202,8 @@ Contributions and test reports are welcome: open an issue.
 API costs.
 
 Related: [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes) fixes the crowd rendering bug on
-RPCS3, and documents the Ghidra/RenderDoc workflow used for both projects.
+RPCS3, keeps a copy of the face fix and the RPCS3 settings notes, and documents the Ghidra/RenderDoc workflow used for
+both projects.
 
 ## Legal
 This repo contains no game code, game files or Sony data: no EBOOT, no WAD contents, no config files, no captures.

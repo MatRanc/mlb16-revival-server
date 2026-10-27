@@ -68,9 +68,9 @@ Switching to another host: run `install` again with their `ca.pem`. It rebuilds 
 host's certificate is dropped.
 
 ## 5. Graphics settings
-Right-click the game → **Create Custom Configuration**, and set the settings listed (with screenshots) in the
-[graphics section of TECHNICAL.md](../TECHNICAL.md#graphics-settings). Without them, parts of the crowd go dark and
-picture-in-picture windows get a black background. For the crowd itself, add the crowd fix patch (step 3).
+Right-click the game → **Create Custom Configuration**, and set the settings listed in the
+[graphics section of TECHNICAL.md](../TECHNICAL.md#graphics-settings). Without them, parts of the crowd go dark,
+picture-in-picture windows get a black background, and generated faces (coaches, created players) are saved white. For the crowd itself, add the crowd fix patch (step 3).
 
 ## 6. Play
 With the host's server running: boot the game → **Online → Game Rooms** → pick the **Revival Room**. Everyone in the room appears in the
@@ -90,3 +90,4 @@ up, leave the room and join it again.
 - **Stuck on "Challenge accepted, waiting for a response", or a blank online menu after a match:** the NP ID lookup patch isn't ticked on one of the machines, or it's older than version 0.2 (get the current file).
 - **Stuck on the stadium select screen:** back out and send a new challenge. Seen once, cause unknown.
 - **Dark crowd, or a black box around the runner's lead-off view:** see [Graphics settings](#5-graphics-settings).
+- **A coach or generic player has a white face:** the game saved it while Write Color Buffers was off. With RPCS3 closed, delete `dev_hdd0/game/BCUS01089_R/USRDIR/HeadFaceCacheFile` (in RPCS3's folder); the game rebuilds the faces.

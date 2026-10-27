@@ -97,7 +97,8 @@ The server only handles logins, rooms, chat and challenges. The match itself is 
 games, which RPCN sets up (NP Signaling):
 - **Same home network:** RPCN gives each game the other's LAN address. Tested, works.
 - **Over the internet:** RPCN gives each game the other's public internet address, and RPCS3 punches a direct UDP
-  connection through both routers. This doesn't use Tailscale. Tested: home Wi-Fi vs a phone hotspot.
+  connection through both routers. This doesn't use Tailscale. Tested: two separate home networks, and home Wi-Fi vs a
+  phone hotspot.
 
 To give it the best chance, turn on **UPnP** in RPCS3 (Configuration → Network) on both machines. If the match still
 won't connect, one player can forward **UDP port 3658** (RPCS3's peer-to-peer port) on their router to their PC.
