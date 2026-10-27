@@ -205,6 +205,21 @@ Related: [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes)
 RPCS3, keeps a copy of the face fix and the RPCS3 settings notes, and documents the Ghidra/RenderDoc workflow used for
 both projects.
 
+## Credits
+
+- [RPCS3](https://rpcs3.net) and its team: the emulator, its IP/Hosts switch and patch system make all of this
+  possible.
+- [RPCN](https://github.com/RipleyTom/rpcn): the PSN stand-in that handles sign-in and connects the two games for
+  the match.
+- [Tailscale](https://tailscale.com): reaching the host's server from another network.
+- [Ghidra](https://ghidra-sre.org) with [Ps3GhidraScripts](https://github.com/clienthax/Ps3GhidraScripts) and
+  [GhidraMCP](https://github.com/LaurieWired/GhidraMCP), and [RenderDoc](https://renderdoc.org) with
+  [renderdoc-mcp](https://github.com/Linkingooo/renderdoc-mcp): finding the online lock, the patches and the graphics
+  fixes.
+- The launcher uses [Sun Valley ttk theme](https://github.com/rdbende/Sun-Valley-ttk-theme),
+  [PyYAML](https://pyyaml.org), [cryptography](https://cryptography.io),
+  [PyCryptodome](https://www.pycryptodome.org) and is packaged with [PyInstaller](https://pyinstaller.org).
+
 ## Legal
 This repo contains no game code, game files or Sony data: no EBOOT, no WAD contents, no config files, no captures.
 It describes how the game talks to its servers so people can keep playing a game they own. You need your own copy of
