@@ -226,4 +226,4 @@ It describes how the game talks to its servers so people can keep playing a game
 the game. MLB The Show is © Sony Interactive Entertainment. Not affiliated with Sony or MLB.
 
 ## License
-[Apache License 2.0](LICENSE).
+[GNU Affero General Public License v3.0](LICENSE).
