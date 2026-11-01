@@ -49,7 +49,7 @@ class Settings(dict):
     path = s.data_dir() / 'settings.json'
 
     def __init__(self):
-        super().__init__(mode='host', crowd_fix=True, face_fix=True, graphics=True, picture='720p')
+        super().__init__(mode='host', crowd_fix=True, face_fix=True, graphics=True, picture='720p', fast_spu=False)
         try:
             self.update(json.loads(self.path.read_text()))
         except (OSError, ValueError):
@@ -173,16 +173,19 @@ class App(tk.Tk):
         self.invite_label = ttk.Label(self.inv, style='Hint.TLabel')
         self.invite_label.pack(side='right', padx=(10, 0))
 
-        ttk.Label(f, text='Graphics', font=self.h).grid(row=7, column=0, columnspan=3, sticky='w', pady=(16, 6))
+        ttk.Label(f, text='Graphics & CPU', font=self.h).grid(row=7, column=0, columnspan=3, sticky='w', pady=(16, 6))
         self.crowd = tk.BooleanVar(value=self.cfg['crowd_fix'])
         self.graphics = tk.BooleanVar(value=self.cfg['graphics'])
         self.face = tk.BooleanVar(value=self.cfg['face_fix'])
+        self.fast_spu = tk.BooleanVar(value=self.cfg.get('fast_spu', False))
         opts = ttk.Frame(f)
         opts.grid(row=8, column=0, columnspan=3, sticky='w')
         for text, var, hint in (('Fix crowd (no fans on the field, no missing stands)', self.crowd, None),
                                 ('Accurate graphics (fixes dark crowd and black boxes)', self.graphics,
                                  'Keep on: without it the crowd goes dark and coaches get white faces.'),
-                                ('Fix holes in player faces', self.face, 'Untick on weaker graphics cards.')):
+                                ('Fix holes in player faces', self.face, 'Untick on weaker graphics cards.'),
+                                ('Fast SPU (Block Size Giga - experimental)', self.fast_spu,
+                                 'Significantly reduces CPU overhead and frametime spikes. Requires RPCS3 with cellSpurs fix.')):
             ttk.Checkbutton(opts, text=text, variable=var, command=self.refresh).pack(anchor='w', pady=(2, 0))
             if hint:
                 ttk.Label(opts, text=hint, style='Hint.TLabel').pack(anchor='w', padx=(28, 0))
@@ -336,14 +339,15 @@ class App(tk.Tk):
         try:
             s.install_patches(r, crowd_fix=self.crowd.get(), face_fix=self.face.get())
             s.install_game_config(r, ip, graphics=self.graphics.get(), picture=self.picture.get(),
-                                  scale=self.scale.get())
+                                  scale=self.scale.get(), fast_spu=self.fast_spu.get())
             s.install_ca(r, ca)
         except Exception as e:   # any failure gets a message, so Set up can always be retried
             messagebox.showerror('Setup failed', "Couldn't change the files in your RPCS3 folder. Make sure RPCS3 is "
                                  f'closed and the folder is right, then try again.\n\nDetails: {e}')
             return
         self.cfg.update(rpcs3_dir=str(r.root), mode=self.mode.get(), crowd_fix=self.crowd.get(), face_fix=self.face.get(),
-                        graphics=self.graphics.get(), picture=self.picture.get(), scale=self.scale.get())
+                        graphics=self.graphics.get(), picture=self.picture.get(), scale=self.scale.get(),
+                        fast_spu=self.fast_spu.get())
         self.cfg.save()
         self.refresh()
         messagebox.showinfo('Done', 'RPCS3 is set up.\n\n'
@@ -372,13 +376,15 @@ class App(tk.Tk):
             ca = s.installed_ca(r)
             server = s.game_config_server(r)
             where = 'your server' if server == '127.0.0.1' else server
-            crowd, graphics, picture, scale = self.crowd.get(), self.graphics.get(), self.picture.get(), self.scale.get()
+            crowd, graphics, picture, scale, fast_spu = (self.crowd.get(), self.graphics.get(),
+                                                         self.picture.get(), self.scale.get(), self.fast_spu.get())
             # each row compares RPCS3's files with the options chosen above, so a changed option shows up here
             fixes = ', '.join(n for n, on in (('crowd', crowd), ('faces', self.face.get())) if on)
+            cpu_desc = ', Giga SPU' if fast_spu else ''
             rows = [(s.patches_status(r, crowd, self.face.get()),
                      'Game patches installed' + (f' ({fixes})' if fixes else ''), 'Game patches'),
-                    (s.game_config_status(r, graphics, picture, scale), f'Graphics applied ({picture}, {scale}%)',
-                     'Graphics'),
+                    (s.game_config_status(r, graphics, picture, scale, fast_spu),
+                     f'Settings applied ({picture}, {scale}%{cpu_desc})', 'Settings'),
                     (server is not None and server == want_ip, f'Connects to {where}', 'Server address'),
                     (ca is not None and isinstance(want_ca, bytes) and ca == want_ca, 'Server certificate trusted',
                      'Server certificate')]

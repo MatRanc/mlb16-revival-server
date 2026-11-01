@@ -276,7 +276,7 @@ def msaa(scale):
     return 'Disabled' if int(scale) >= 200 else 'Auto'
 
 
-def install_game_config(r, server_ip, graphics=True, picture='720p', scale=None):
+def install_game_config(r, server_ip, graphics=True, picture='720p', scale=None, fast_spu=False):
     """Merges our settings into RPCS3's custom config for this game (created if missing). RPCS3 applies it on top
     of the global config, so only these keys change, and only for MLB The Show 16."""
     cfg = load_yaml(r.custom_config)
@@ -285,7 +285,10 @@ def install_game_config(r, server_ip, graphics=True, picture='720p', scale=None)
     net['PSN status'] = 'RPCN'
     net['UPNP Enabled'] = 'true'
     net['IP swap list'] = f'{GAME_HOST}={server_ip}&&{TELEMETRY_HOST}={server_ip}'
-    cfg.setdefault('Core', {}).update(STABILITY)
+    core = cfg.setdefault('Core', {})
+    core.update(STABILITY)
+    if fast_spu:
+        core['SPU Block Size'] = 'Giga'
     # Trace logging slows the game down. Explicit levels: an empty map is refilled from the global config whenever
     # RPCS3's settings window re-saves this file.
     cfg['Log'] = {k: 'Notice' for k in cfg.get('Log', {})}
@@ -303,14 +306,15 @@ def install_game_config(r, server_ip, graphics=True, picture='720p', scale=None)
     write_text(r.custom_config, dump_yaml(cfg))
 
 
-def game_config_status(r, graphics=True, picture='720p', scale=None):
+def game_config_status(r, graphics=True, picture='720p', scale=None, fast_spu=False):
     """True if this game's config has the settings install_game_config would write with these options."""
     cfg = load_yaml(r.custom_config)
     core, video = cfg.get('Core', {}), cfg.get('Video', {})
     want = {**VIDEO_STABILITY, **(GRAPHICS if graphics else GRAPHICS_OFF), **PICTURE[picture],
             'Output Scaling Mode': 'Bilinear', 'Resolution Scale': str(scale or PICTURE[picture]['Resolution Scale'])}
     want['MSAA'] = msaa(want['Resolution Scale'])
-    return (all(core.get(k) == v for k, v in STABILITY.items()) and all(video.get(k) == v for k, v in want.items()))
+    want_core = {**STABILITY, 'SPU Block Size': 'Giga' if fast_spu else 'Safe'}
+    return (all(core.get(k) == v for k, v in want_core.items()) and all(video.get(k) == v for k, v in want.items()))
 
 
 def game_config_server(r):

@@ -62,6 +62,14 @@ for windows in (False, True):
         assert c['Video']['Strict Rendering Mode'] == 'false' and c['Video']['Resolution'] == '1280x720'
         assert c['Video']['Output Scaling Mode'] == 'Bilinear' and c['Video']['Anisotropic Filter Override'] == '0'
         assert s.game_config_status(r, picture='720p') and not s.game_config_status(r, picture='1080p')
+
+        # Fast SPU (Giga block size)
+        s.install_game_config(r, '100.1.2.3', picture='720p', fast_spu=True)
+        c_giga = s.load_yaml(r.custom_config)
+        assert c_giga['Core']['SPU Block Size'] == 'Giga'
+        assert s.game_config_status(r, picture='720p', fast_spu=True)
+        assert not s.game_config_status(r, picture='720p', fast_spu=False)
+
         s.install_game_config(r, '100.1.2.3', graphics=False, picture='1080p')
         c = s.load_yaml(r.custom_config)
         assert c['Video']['Resolution Scale'] == '150' and c['Core']['SPU Block Size'] == 'Safe'

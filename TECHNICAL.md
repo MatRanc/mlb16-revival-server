@@ -49,13 +49,20 @@ depth copies, not from fewer flushes. Strict Rendering Mode isn't needed: it cos
 ignore the anisotropic filter. A "too bright" night sky it seemed to fix turned out to be dusk: "Night" games start at
 dusk and get dark as the game goes on.
 
-The CPU settings matter for stability: two online matches froze on a player who had SPU Block Size *Mega* and
-Accurate SPU Reservations off (with 1440×1080 and 200% scale) (one silent hang, and one RPCS3 error inside `cellSpursRemoveWorkload`).
+The CPU settings matter for stability: two online matches previously froze on a player who had SPU Block Size *Mega* or *Giga*
+and Accurate SPU Reservations off (with 1440×1080 and 200% scale) (one silent hang, and one RPCS3 error inside `cellSpursRemoveWorkload`:
+"vm::writer_lock is being used without cpu_flag::wait…"). This was traced to RPCS3's `cellSpursRemoveWorkload` acquiring
+the workload reservation lock without setting `cpu_flag::wait` on `ppu.state`. With a one-line upstream RPCS3 fix
+(`ppu.state += cpu_flag::wait` before `vm::reservation_op`), SPU Block Size can safely be set to **Giga**.
+This provides a huge performance gain for Sony Edge Geometry tasks running on 5 SPUs (mesh decompression, matrix-palette
+player skinning, frustum culling) by letting LLVM allocate native host CPU registers across whole loops and unroll/vectorize
+them rather than constantly spilling SPU registers to system memory.
 On Linux, RSX FIFO Accuracy *Fast* logged "FIFO error: possible desync event" every few seconds, then froze or crashed
 RPCS3; *Atomic* logged none. Every freeze traced so far came from a setting changed away from RPCS3's default, often
 copied from the player's global config (RPCS3's **Create Custom Configuration** copies all global values). So the
 launcher always resets every CPU, SPU and RSX accuracy or timing setting for this game to RPCS3's default (the full
-list is `STABILITY` and `VIDEO_STABILITY` in [app/setup_logic.py](app/setup_logic.py)), and sets this game's
+list is `STABILITY` and `VIDEO_STABILITY` in [app/setup_logic.py](app/setup_logic.py)), with an optional experimental
+toggle for "Fast SPU (Block Size Giga)" for players running the patched RPCS3 build, and sets this game's
 per-channel log levels back to Notice, even with "Accurate graphics" unticked. Default
 Resolution *1440×1080* is not 1440p: it's a stretched PS3 output mode, and the game still renders at 720p. The crowd itself needs the **crowd fix patch** from
 [mlb-show-rpcs3-fixes](https://github.com/MatRanc/mlb-show-rpcs3-fixes), which the launcher also installs.
