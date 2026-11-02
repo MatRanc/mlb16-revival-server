@@ -95,3 +95,14 @@ Why a stale cache shows as white faces: [TECHNICAL.md](../TECHNICAL.md#the-patch
 - The update's `PATCH_GD.WAD` stores `frontend/services.xml` and `frontend/servers_prod.xml` as plain text.
 - The UI scripts (for example `ol_GameRoom`) are inside `MLBPS3_GD.WAD` as compiled data.
 - WAD index entries (`*.WAD.HDR`) are `(name hash, size, offset)`. File contents are IFF chunks.
+
+## SPU geometry job (c690) — Local Store addresses, not EBOOT
+
+The 3D geometry job is an SPU module (image 6), loaded at Local Store `0x4000` (job entry `0x135B8`). These are
+**SPU LS addresses**, not EBOOT virtual addresses, so they do not follow the file-offset rule above. Full map with
+line numbers and status: `mlb16-recomp/docs/c690_function_map.md`.
+
+Pipeline: unpack `0x6D68` -> transform `0xA798`/`0xA9B0` -> normalize `0xAF98`/`0xB238` -> pack `0x7C18`/`0x8160`
+-> assemble `0x2A` (`0x10F78`) into 36-byte interleaved vertices. Cull/index/ring stay on the SPU: `0x132E0`
+(cull), `0x12830` (index decompress), `0x13080` (emit), `0xE0A8` (ring). PPU side: `FUN_000730c8` emits the ICE
+command stream, `FUN_00070e14` builds per-stream descriptors.
