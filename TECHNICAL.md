@@ -190,6 +190,10 @@ The full protocol write-up is in [docs/protocol.md](docs/protocol.md).
   patching. Part of that was the launcher's own settings: v0.4.12 turned off the buffer options that overloaded
   RPCS3's RSX thread (see [Graphics settings](#graphics-settings)), and dugout close-ups went from 7 to 11 FPS to 30
   to 40 on the same PC. Mound visits still run at about 25.
+  Measured again on 2026-11-02 with the launcher's current settings (720p, Resolution Scale 100%, same PC): menus and
+  the start screen 60 (capped), pregame cinematics 40 to 45, the pitching view 46 to 48 with steady frame times (about
+  20 ms, 19 to 24), strikeout cinematics about 45, zoom-ins 60 (capped), mound visits about 25. SPU usage 40 to 50%,
+  RSX 4 to 6%. The 24 on the pitching view above predates v0.4.12.
 
 ## Ideas for later
 
